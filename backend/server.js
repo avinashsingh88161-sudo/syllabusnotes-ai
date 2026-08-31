@@ -4,6 +4,9 @@
  */
 
 require("dotenv").config();
+try {
+  require("dns").setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (_) {}
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
