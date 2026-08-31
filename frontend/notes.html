@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes Preview — SyllabusNotes AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/notes.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-logo" href="dashboard.html">
+      <div class="sidebar-logo-icon">📚</div>
+      <div class="sidebar-logo-text">SyllabusNotes <span>AI Platform</span></div>
+    </a>
+    <div class="sidebar-divider"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Menu</div>
+      <a class="sidebar-nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="sidebar-nav-item active" href="#"><span class="nav-icon">📖</span> View Notes</a>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-nav-item" id="logoutBtn"><span class="nav-icon">🚪</span> Log Out</button>
+    </nav>
+    <div class="sidebar-user flex gap-1" id="sidebarUser">
+      <div class="sidebar-user-avatar" id="sidebarAvatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarName">Loading...</div>
+        <div class="sidebar-user-plan" id="sidebarPlan">Free Plan</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ─────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-hamburger" id="hamburger" aria-label="Toggle sidebar">☰</button>
+        <nav style="display:flex;align-items:center;gap:6px;font-size:0.875rem;color:var(--text-muted);">
+          <a href="dashboard.html" style="color:var(--text-muted);">Dashboard</a>
+          <span>›</span>
+          <span style="color:var(--text-primary);font-weight:600;" id="topbarFileName">Notes</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <a href="dashboard.html" class="topbar-btn">← Back to Dashboard</a>
+        <button class="btn btn-sm btn-primary hidden" id="downloadBtn">⬇ Download PDF</button>
+        <button class="btn btn-sm btn-ghost hidden" id="upgradeForDownloadBtn">🔒 Download PDF</button>
+      </div>
+    </header>
+
+    <!-- Page body -->
+    <div class="page-body">
+
+      <!-- Loading skeleton -->
+      <div id="loadingState">
+        <div class="notes-layout">
+          <div>
+            <div class="card">
+              <div class="card-header"><div class="skeleton" style="width:200px;height:18px;"></div></div>
+              <div class="card-body">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-line w-90"></div>
+                <div class="skeleton skeleton-line w-75"></div>
+                <div class="skeleton skeleton-line w-90"></div>
+                <div class="skeleton skeleton-line w-60"></div>
+                <div class="skeleton skeleton-line w-90"></div>
+                <div class="skeleton skeleton-line w-75"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card mb-2"><div class="card-body"><div class="skeleton" style="height:120px;"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div class="hidden" id="errorState">
+        <div class="card">
+          <div class="card-body text-center" style="padding:60px 20px;">
+            <div style="font-size:3rem;margin-bottom:16px;">❌</div>
+            <h3 style="margin-bottom:8px;">Could Not Load Notes</h3>
+            <p id="errorMsg" style="color:var(--text-muted);margin-bottom:20px;">Something went wrong.</p>
+            <a href="dashboard.html" class="btn btn-primary">← Back to Dashboard</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes content -->
+      <div class="hidden" id="notesState">
+        <div class="notes-layout">
+
+          <!-- ── Notes Viewer ────────────────────────────── -->
+          <div>
+            <!-- Processing card (if still running) -->
+            <div class="processing-card card mb-3 hidden" id="stillProcessingCard">
+              <div class="card-header">
+                <h4 style="font-size:1rem;">⚙️ Still Processing...</h4>
+                <span class="badge badge-warning" id="processingBadge">Working</span>
+              </div>
+              <div class="card-body text-center">
+                <p class="text-muted mb-2" id="processingLabel">Processing your document...</p>
+                <div class="progress-bar"><div class="progress-fill animated" style="width:60%"></div></div>
+              </div>
+            </div>
+
+            <!-- ── Top Smart Action Bar ────────────────────────── -->
+            <div class="smart-action-bar mb-3">
+              <div class="mode-toggle-group">
+                <button class="mode-toggle-btn active" id="fullModeBtn">📖 Full In-Depth Notes</button>
+                <button class="mode-toggle-btn" id="cheatSheetModeBtn">⚡ 1-Night Cheat Sheet</button>
+              </div>
+              <div class="action-buttons-group">
+                <button class="action-pill-btn" id="podcastBtn">🎙️ Audio Podcast</button>
+                <button class="action-pill-btn" id="quizBtn">🧠 Quiz & Viva Prep</button>
+                <button class="action-pill-btn primary" id="askAiTriggerBtn">🤖 Ask AI Tutor (Hinglish)</button>
+              </div>
+            </div>
+
+            <!-- Audio Player Bar (Collapsible) -->
+            <div class="audio-player-bar hidden mb-3" id="audioPlayerBar">
+              <div class="audio-player-left">
+                <span class="audio-icon">🎙️</span>
+                <div>
+                  <div class="audio-title" id="audioTitle">Audio Podcast Summary</div>
+                  <div class="audio-status" id="audioStatus">Ready to play</div>
+                </div>
+              </div>
+              <div class="audio-player-controls">
+                <button class="audio-btn" id="audioPlayPauseBtn">▶ Play</button>
+                <button class="audio-btn secondary" id="audioStopBtn">⏹ Stop</button>
+                <select class="audio-speed-select" id="audioSpeedSelect">
+                  <option value="1">1.0x Speed</option>
+                  <option value="1.25">1.25x Speed</option>
+                  <option value="1.5" selected>1.5x Speed</option>
+                  <option value="2">2.0x Speed</option>
+                </select>
+                <button class="audio-close-btn" id="audioCloseBtn">✕</button>
+              </div>
+            </div>
+
+            <!-- Notes viewer -->
+            <div class="notes-viewer notes-blur-guard" id="notesViewerWrap">
+              <div class="notes-viewer-header">
+                <div class="notes-viewer-title">
+                  📖 <span id="noteFileName">—</span>
+                </div>
+                <div class="notes-viewer-actions">
+                  <button class="btn btn-sm btn-ghost" id="copyBtn" title="Copy notes text">📋 Copy Text</button>
+                </div>
+              </div>
+
+              <!-- Print protection notice -->
+              <div class="print-notice mx-3 mt-2 hidden" id="printNotice">
+                ⚠️ <strong>Print disabled.</strong> Download the PDF (Premium) to save your notes for offline use.
+              </div>
+
+              <!-- Actual notes -->
+              <div class="notes-content notes-protected" id="notesContent">
+                <p style="color:var(--text-muted);">Loading notes...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Sidebar Panel ───────────────────────────── -->
+          <div class="notes-sidebar">
+
+            <!-- File metadata -->
+            <div class="card">
+              <div class="card-header">
+                <h4 style="font-size:0.9rem;">📋 File Details</h4>
+              </div>
+              <div class="card-body">
+                <div class="notes-meta-row">
+                  <span class="notes-meta-icon">📄</span>
+                  <div>
+                    <div class="notes-meta-label">File Name</div>
+                    <div class="notes-meta-value" id="metaFileName">—</div>
+                  </div>
+                </div>
+                <div class="notes-meta-row">
+                  <span class="notes-meta-icon">📁</span>
+                  <div>
+                    <div class="notes-meta-label">Type</div>
+                    <div class="notes-meta-value" id="metaType">—</div>
+                  </div>
+                </div>
+                <div class="notes-meta-row">
+                  <span class="notes-meta-icon">🎓</span>
+                  <div>
+                    <div class="notes-meta-label">Notes Level</div>
+                    <div class="notes-meta-value" id="metaLevel">—</div>
+                  </div>
+                </div>
+                <div class="notes-meta-row">
+                  <span class="notes-meta-icon">🗓️</span>
+                  <div>
+                    <div class="notes-meta-label">Generated On</div>
+                    <div class="notes-meta-value" id="metaDate">—</div>
+                  </div>
+                </div>
+                <div class="notes-meta-row">
+                  <span class="notes-meta-icon">✅</span>
+                  <div>
+                    <div class="notes-meta-label">Status</div>
+                    <div class="notes-meta-value" id="metaStatus">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Download card -->
+            <div class="card">
+              <div class="card-body">
+                <h4 style="font-size:0.9rem;margin-bottom:12px;">📥 Download Options</h4>
+                <div id="downloadSection">
+                  <!-- Populated by JS based on subscription -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Exam Guarantee Highlights -->
+            <div class="card">
+              <div class="card-body">
+                <h4 style="font-size:0.9rem;margin-bottom:10px;">🎯 Smart Features</h4>
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+                  <li style="font-size:0.8rem;color:var(--text-secondary);">🔥 <strong>Predicted 10-Marks</strong> for exams</li>
+                  <li style="font-size:0.8rem;color:var(--text-secondary);">📊 <strong>Visual Architecture</strong> diagrams</li>
+                  <li style="font-size:0.8rem;color:var(--text-secondary);">⚡ <strong>1-Night Cheat Sheet</strong> mode</li>
+                  <li style="font-size:0.8rem;color:var(--text-secondary);">🗣️ <strong>Hinglish AI Tutor</strong> doubt solver</li>
+                </ul>
+              </div>
+            </div>
+
+          </div><!-- /notes-sidebar -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ── Floating Ask AI Tutor Drawer ─────────────────────────── -->
+<div class="ai-drawer-overlay hidden" id="aiDrawerOverlay"></div>
+<div class="ai-drawer hidden" id="aiDrawer">
+  <div class="ai-drawer-header">
+    <div class="ai-drawer-title">
+      <span>🤖</span>
+      <div>
+        <div style="font-weight:700;font-size:0.95rem;">AI Study Tutor (Doubt Solver)</div>
+        <div style="font-size:0.75rem;color:#94a3b8;">English by default • Supports Hindi & Hinglish</div>
+      </div>
+    </div>
+    <button class="ai-drawer-close" id="aiDrawerCloseBtn">✕</button>
+  </div>
+
+  <!-- Quick Action Chips -->
+  <div class="ai-quick-chips">
+    <button class="chip-btn" data-query="Explain this step-by-step in clear, professional English." data-mode="english">🇬🇧 English Explanation</button>
+    <button class="chip-btn" data-query="Isko simple conversational Hinglish me real-world relatable example ke sath samjhao." data-mode="hinglish">🗣️ Hinglish Explanation</button>
+    <button class="chip-btn" data-query="Provide a 10-mark semester exam answer framework point-by-point." data-mode="exam-mode">🎯 10-Mark Exam Framework</button>
+    <button class="chip-btn" data-query="Explain this code line-by-line in simple terms." data-mode="auto">💻 Explain Code</button>
+    <button class="chip-btn" data-query="What examiner questions can be asked in semester viva from this topic with answers?" data-mode="auto">🎓 Viva Questions</button>
+  </div>
+
+  <!-- Messages Container -->
+  <div class="ai-messages-container" id="aiMessagesContainer">
+    <div class="ai-msg ai">
+      👋 <strong>Hello!</strong> I'm your AI Study Tutor. Ask any doubt from your notes in <strong>English, Hindi, or Hinglish</strong> — or click the quick action chips above!
+    </div>
+  </div>
+
+  <!-- Input Bar -->
+  <div class="ai-input-bar">
+    <input type="text" class="ai-input-field" id="aiQueryInput" placeholder="Type your doubt (English / Hindi / Hinglish)..." />
+    <button class="ai-send-btn" id="aiSendBtn">🚀 Send</button>
+  </div>
+</div>
+
+<!-- ── Interactive Quiz & Viva Modal ────────────────────────── -->
+<div class="modal-overlay hidden" id="quizModalOverlay">
+  <div class="modal quiz-modal" role="dialog">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.4rem;">🧠</span>
+        <h3 id="quizModalTitle">Interactive Quiz & Viva Prep</h3>
+      </div>
+      <button class="modal-close" id="quizModalCloseBtn">✕</button>
+    </div>
+    
+    <!-- Quiz Tabs -->
+    <div class="quiz-tabs">
+      <button class="quiz-tab-btn active" id="tabQuizBtn">🎯 5-Question MCQ Quiz</button>
+      <button class="quiz-tab-btn" id="tabVivaBtn">🎓 Viva Exam Flashcards</button>
+    </div>
+
+    <div class="modal-body" id="quizModalBody">
+      <div class="text-center" style="padding:40px 20px;">
+        <div class="skeleton skeleton-title" style="margin:0 auto 16px;"></div>
+        <p style="color:var(--text-muted);">Generating custom quiz from your notes...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+auth.requireAuth();
+
+const user = auth.getUser();
+const params = new URLSearchParams(window.location.search);
+const fileId = params.get("id");
+
+let fullNotesMarkdown = "";
+let currentViewMode = "full"; // "full" | "cheat"
+let activeAudioUtterance = null;
+let isAudioPlaying = false;
+let currentTargetId = fileId;
+
+// Render sidebar user
+if (user) {
+  document.getElementById("sidebarAvatar").textContent = utils.getInitials(user.name);
+  document.getElementById("sidebarName").textContent   = user.name;
+  document.getElementById("sidebarPlan").textContent   = user.subscription_status === "premium" ? "⭐ Premium" : "Free Plan";
+}
+
+// ── Load note ─────────────────────────────────────────────────
+async function loadNote() {
+  let targetId = fileId;
+
+  if (!targetId) {
+    const listRes = await api.get("/notes?limit=1");
+    if (listRes.success && listRes.data && listRes.data.length > 0) {
+      targetId = listRes.data[0]._id || listRes.data[0].id;
+      currentTargetId = targetId;
+      if (window.history.replaceState) {
+        window.history.replaceState(null, "", `notes.html?id=${targetId}`);
+      }
+    } else {
+      showError("No notes found yet. Upload a syllabus from your dashboard to generate smart study notes!");
+      return;
+    }
+  } else {
+    currentTargetId = targetId;
+  }
+
+  const data = await api.get(`/notes/${targetId}`);
+
+  document.getElementById("loadingState").classList.add("hidden");
+
+  if (!data.success) {
+    showError(data.message || "Could not load notes.");
+    return;
+  }
+
+  const note = data.data;
+  document.getElementById("notesState").classList.remove("hidden");
+
+  // If still processing, show processing card and poll
+  if (note.status !== "completed" && note.status !== "error") {
+    document.getElementById("stillProcessingCard").classList.remove("hidden");
+    document.getElementById("processingLabel").textContent =
+      { ocr_processing: "Reading your document...", ai_processing: "AI generating notes...", pdf_generating: "Building PDF..." }[note.status] || "Processing...";
+    let polls = 0;
+    const interval = setInterval(async () => {
+      polls++;
+      const fresh = await api.get(`/notes/${targetId}`);
+      if (fresh.data?.status === "completed" || fresh.data?.status === "error" || polls > 40) {
+        clearInterval(interval);
+        loadNote();
+      }
+    }, 3000);
+    return;
+  }
+
+  if (note.status === "error") {
+    showError("Processing failed for this document. Please try uploading again.");
+    return;
+  }
+
+  // Populate metadata
+  const fileName = note.original_name || "Notes";
+  document.getElementById("topbarFileName").textContent = fileName;
+  document.getElementById("noteFileName").textContent   = fileName;
+  document.getElementById("metaFileName").textContent   = fileName;
+  document.getElementById("metaType").textContent       = note.file_type?.toUpperCase() || "—";
+  document.getElementById("metaLevel").textContent      = note.user_level ? note.user_level.charAt(0).toUpperCase() + note.user_level.slice(1) : "—";
+  document.getElementById("metaDate").textContent       = utils.formatDate(note.createdAt);
+  document.getElementById("metaStatus").innerHTML       = utils.statusBadge(note.status);
+
+  // Render notes
+  fullNotesMarkdown = note.generated_notes || "";
+  renderActiveMode();
+
+  // Download section
+  const isPremium = user?.subscription_status === "premium";
+  const dlSection = document.getElementById("downloadSection");
+
+  if (isPremium) {
+    document.getElementById("downloadBtn").classList.remove("hidden");
+    dlSection.innerHTML = `
+      <button class="btn btn-success btn-block" id="sidebarDownloadBtn">⬇ Download PDF</button>
+      <p class="form-hint mt-1">Professional formatted PDF with all your notes & diagrams.</p>`;
+    document.getElementById("sidebarDownloadBtn").addEventListener("click", downloadPDF);
+    document.getElementById("downloadBtn").addEventListener("click", downloadPDF);
+  } else {
+    document.getElementById("upgradeForDownloadBtn").classList.remove("hidden");
+    dlSection.innerHTML = `
+      <div class="print-notice mb-2">🔒 PDF download is a Premium feature.</div>
+      <button class="btn btn-primary btn-block" id="sidebarUpgradeBtn">⭐ Upgrade to Premium</button>
+      <p class="form-hint mt-1">₹499/month — unlimited uploads + PDF downloads.</p>`;
+    document.getElementById("sidebarUpgradeBtn").addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+    document.getElementById("upgradeForDownloadBtn").addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
+    document.getElementById("printNotice").classList.remove("hidden");
+  }
+}
+
+// ── Render Full vs Cheat Sheet Mode ───────────────────────────
+function renderActiveMode() {
+  const notesContent = document.getElementById("notesContent");
+  if (!fullNotesMarkdown) {
+    notesContent.innerHTML = `<div class="alert alert-warning">No notes content available.</div>`;
+    return;
+  }
+
+  if (currentViewMode === "full") {
+    notesContent.innerHTML = md.render(fullNotesMarkdown);
+  } else {
+    // ⚡ 1-Night Cheat Sheet Mode: extract key sections (Definitions, Diagrams, Tables, Code, Predicted Questions)
+    const cheatMarkdown = buildCheatSheetMarkdown(fullNotesMarkdown);
+    notesContent.innerHTML = `
+      <div class="cheat-banner mb-3">
+        ⚡ <strong>1-Night Revision Cheat Sheet</strong> — High-yield summary, diagrams, tables, and exam questions only.
+      </div>
+      ${md.render(cheatMarkdown)}
+    `;
+  }
+}
+
+function buildCheatSheetMarkdown(markdown) {
+  const lines = markdown.split("\n");
+  const filtered = [];
+  let keep = true;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.startsWith("# ") || line.startsWith("## ")) {
+      filtered.push(line);
+      continue;
+    }
+    if (line.startsWith("### Topic")) {
+      filtered.push(line);
+      continue;
+    }
+    if (line.includes("Definition") || line.includes("Diagram") || line.includes("Code") || line.includes("Comparison") || line.includes("Predicted") || line.includes("Exam Pro-Tips") || line.includes("Summary")) {
+      filtered.push(line);
+      keep = true;
+      continue;
+    }
+    if (line.startsWith("```") || line.startsWith("|") || line.startsWith("> ")) {
+      filtered.push(line);
+      continue;
+    }
+    if (line.includes("In-Depth Detailed Explanation")) {
+      keep = false;
+    }
+    if (keep) {
+      filtered.push(line);
+    }
+  }
+  return filtered.join("\n");
+}
+
+// Mode switches
+document.getElementById("fullModeBtn").addEventListener("click", () => {
+  currentViewMode = "full";
+  document.getElementById("fullModeBtn").classList.add("active");
+  document.getElementById("cheatSheetModeBtn").classList.remove("active");
+  renderActiveMode();
+});
+
+document.getElementById("cheatSheetModeBtn").addEventListener("click", () => {
+  currentViewMode = "cheat";
+  document.getElementById("cheatSheetModeBtn").classList.add("active");
+  document.getElementById("fullModeBtn").classList.remove("active");
+  renderActiveMode();
+});
+
+// ── 🎙️ Audio Podcast Player Engine ────────────────────────────
+const audioPlayerBar = document.getElementById("audioPlayerBar");
+const audioPlayPauseBtn = document.getElementById("audioPlayPauseBtn");
+const audioStatus = document.getElementById("audioStatus");
+
+document.getElementById("podcastBtn").addEventListener("click", () => {
+  audioPlayerBar.classList.toggle("hidden");
+  if (!audioPlayerBar.classList.contains("hidden") && !isAudioPlaying) {
+    startAudioPlayback();
+  }
+});
+
+document.getElementById("audioCloseBtn").addEventListener("click", () => {
+  stopAudioPlayback();
+  audioPlayerBar.classList.add("hidden");
+});
+
+audioPlayPauseBtn.addEventListener("click", () => {
+  if (isAudioPlaying) {
+    window.speechSynthesis.pause();
+    isAudioPlaying = false;
+    audioPlayPauseBtn.textContent = "▶ Resume";
+    audioStatus.textContent = "Paused";
+  } else {
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      isAudioPlaying = true;
+      audioPlayPauseBtn.textContent = "⏸ Pause";
+      audioStatus.textContent = "Playing podcast summary...";
+    } else {
+      startAudioPlayback();
+    }
+  }
+});
+
+document.getElementById("audioStopBtn").addEventListener("click", stopAudioPlayback);
+
+document.getElementById("audioSpeedSelect").addEventListener("change", (e) => {
+  if (isAudioPlaying) {
+    stopAudioPlayback();
+    startAudioPlayback();
+  }
+});
+
+function startAudioPlayback() {
+  if (!('speechSynthesis' in window)) {
+    toast.error("Audio synthesis is not supported on this browser.");
+    return;
+  }
+  window.speechSynthesis.cancel();
+
+  // Extract clean text (strip markdown)
+  const plainText = (fullNotesMarkdown || "")
+    .replace(/```[\s\S]*?```/g, " Code example skipped in audio. ")
+    .replace(/[#*`_>|]/g, " ")
+    .slice(0, 5000);
+
+  const utterance = new SpeechSynthesisUtterance(plainText);
+  const speed = parseFloat(document.getElementById("audioSpeedSelect").value) || 1.25;
+  utterance.rate = speed;
+  utterance.lang = "en-IN";
+
+  utterance.onstart = () => {
+    isAudioPlaying = true;
+    audioPlayPauseBtn.textContent = "⏸ Pause";
+    audioStatus.textContent = `Playing podcast (${speed}x speed)...`;
+  };
+
+  utterance.onend = () => {
+    isAudioPlaying = false;
+    audioPlayPauseBtn.textContent = "▶ Play Again";
+    audioStatus.textContent = "Finished playback";
+  };
+
+  utterance.onerror = () => {
+    isAudioPlaying = false;
+    audioPlayPauseBtn.textContent = "▶ Play";
+    audioStatus.textContent = "Audio stopped";
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function stopAudioPlayback() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  isAudioPlaying = false;
+  audioPlayPauseBtn.textContent = "▶ Play";
+  audioStatus.textContent = "Stopped";
+}
+
+// ── 🤖 Ask AI Tutor (Hinglish Doubt Solver) ───────────────────
+const aiDrawer = document.getElementById("aiDrawer");
+const aiDrawerOverlay = document.getElementById("aiDrawerOverlay");
+const aiMessagesContainer = document.getElementById("aiMessagesContainer");
+const aiQueryInput = document.getElementById("aiQueryInput");
+
+function openAiDrawer() {
+  aiDrawer.classList.remove("hidden");
+  aiDrawerOverlay.classList.remove("hidden");
+  aiQueryInput.focus();
+}
+
+function closeAiDrawer() {
+  aiDrawer.classList.add("hidden");
+  aiDrawerOverlay.classList.add("hidden");
+}
+
+document.getElementById("askAiTriggerBtn").addEventListener("click", openAiDrawer);
+document.getElementById("aiDrawerCloseBtn").addEventListener("click", closeAiDrawer);
+aiDrawerOverlay.addEventListener("click", closeAiDrawer);
+
+// Quick action chips
+document.querySelectorAll(".chip-btn").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const q = chip.getAttribute("data-query");
+    const m = chip.getAttribute("data-mode") || "auto";
+    sendAiDoubt(q, m);
+  });
+});
+
+document.getElementById("aiSendBtn").addEventListener("click", () => {
+  const q = aiQueryInput.value.trim();
+  if (q) {
+    sendAiDoubt(q, "auto");
+    aiQueryInput.value = "";
+  }
+});
+
+aiQueryInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const q = aiQueryInput.value.trim();
+    if (q) {
+      sendAiDoubt(q, "auto");
+      aiQueryInput.value = "";
+    }
+  }
+});
+
+async function sendAiDoubt(question, mode = "auto") {
+  // Append user msg
+  appendAiBubble(question, "user");
+
+  // Loading bubble
+  const loadingId = "loading_" + Date.now();
+  appendAiBubble("🤔 AI tutor thinking...", "ai", loadingId);
+
+  try {
+    const activeId = currentTargetId || fileId;
+    const res = await api.post(`/notes/${activeId}/ask-ai`, {
+      question,
+      mode: mode,
+    });
+
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+
+    if (res.success && res.answer) {
+      appendAiBubble(res.answer, "ai");
+    } else {
+      appendAiBubble("Sorry, I could not answer that right now. Please try again.", "ai");
+    }
+  } catch (err) {
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+    appendAiBubble("Network error while connecting to AI Tutor.", "ai");
+  }
+}
+
+function appendAiBubble(text, sender, elementId = null) {
+  const div = document.createElement("div");
+  div.className = `ai-msg ${sender}`;
+  if (elementId) div.id = elementId;
+  div.innerHTML = md.render(text);
+  aiMessagesContainer.appendChild(div);
+  aiMessagesContainer.scrollTop = aiMessagesContainer.scrollHeight;
+}
+
+// ── 🧠 Interactive Quiz & Viva Modal ──────────────────────────
+const quizModalOverlay = document.getElementById("quizModalOverlay");
+const quizModalBody = document.getElementById("quizModalBody");
+let cachedQuizData = null;
+let activeQuizTab = "quiz";
+
+document.getElementById("quizBtn").addEventListener("click", async () => {
+  quizModalOverlay.classList.remove("hidden");
+  if (!cachedQuizData) {
+    await fetchQuizData();
+  } else {
+    renderQuizTab();
+  }
+});
+
+document.getElementById("quizModalCloseBtn").addEventListener("click", () => {
+  quizModalOverlay.classList.add("hidden");
+});
+
+document.getElementById("tabQuizBtn").addEventListener("click", () => {
+  activeQuizTab = "quiz";
+  document.getElementById("tabQuizBtn").classList.add("active");
+  document.getElementById("tabVivaBtn").classList.remove("active");
+  renderQuizTab();
+});
+
+document.getElementById("tabVivaBtn").addEventListener("click", () => {
+  activeQuizTab = "viva";
+  document.getElementById("tabVivaBtn").classList.add("active");
+  document.getElementById("tabQuizBtn").classList.remove("active");
+  renderQuizTab();
+});
+
+async function fetchQuizData() {
+  quizModalBody.innerHTML = `
+    <div class="text-center" style="padding:40px 20px;">
+      <div class="skeleton skeleton-title" style="margin:0 auto 16px;"></div>
+      <p style="color:var(--text-muted);">AI is preparing high-yield exam MCQs and Viva flashcards...</p>
+    </div>`;
+
+  try {
+    const activeId = currentTargetId || fileId;
+    const res = await api.get(`/notes/${activeId}/quiz`);
+    if (res.success && res.data) {
+      cachedQuizData = res.data;
+      renderQuizTab();
+    } else {
+      quizModalBody.innerHTML = `<div class="alert alert-warning">Could not generate quiz. Please try again later.</div>`;
+    }
+  } catch (err) {
+    quizModalBody.innerHTML = `<div class="alert alert-danger">Error loading quiz data.</div>`;
+  }
+}
+
+function renderQuizTab() {
+  if (!cachedQuizData) return;
+
+  if (activeQuizTab === "quiz") {
+    const quizList = cachedQuizData.quiz || [];
+    let html = `<div class="quiz-container">`;
+    quizList.forEach((q, qIndex) => {
+      html += `
+        <div class="quiz-card mb-3" id="qcard_${qIndex}">
+          <div class="quiz-q-title">Q${qIndex + 1}: ${q.question}</div>
+          <div class="quiz-options">
+            ${q.options.map((opt, optIndex) => `
+              <button class="quiz-opt-btn" onclick="selectQuizOption(${qIndex}, ${optIndex}, ${q.correctIndex}, '${encodeURIComponent(q.explanation || '')}')">
+                <span class="opt-letter">${String.fromCharCode(65 + optIndex)}</span>
+                <span>${opt}</span>
+              </button>
+            `).join("")}
+          </div>
+          <div class="quiz-feedback hidden" id="qfeedback_${qIndex}"></div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    quizModalBody.innerHTML = html;
+  } else {
+    // Viva Flashcards
+    const vivaList = cachedQuizData.viva || [];
+    let html = `<div class="viva-container">`;
+    vivaList.forEach((v, vIndex) => {
+      html += `
+        <div class="viva-card mb-3">
+          <div class="viva-q">🎓 <strong>Viva Q${vIndex + 1}:</strong> ${v.question}</div>
+          <button class="viva-reveal-btn" onclick="this.nextElementSibling.classList.toggle('hidden'); this.textContent = this.nextElementSibling.classList.contains('hidden') ? '👁️ Reveal Examiner Answer' : '🙈 Hide Answer';">👁️ Reveal Examiner Answer</button>
+          <div class="viva-ans hidden mt-2">
+            <strong>Model Answer Hint:</strong> ${v.answerHint}
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    quizModalBody.innerHTML = html;
+  }
+}
+
+window.selectQuizOption = function(qIndex, selectedOpt, correctOpt, explanationEncoded) {
+  const card = document.getElementById(`qcard_${qIndex}`);
+  const feedback = document.getElementById(`qfeedback_${qIndex}`);
+  const explanation = decodeURIComponent(explanationEncoded);
+  const buttons = card.querySelectorAll(".quiz-opt-btn");
+
+  buttons.forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === correctOpt) {
+      btn.classList.add("correct");
+    } else if (idx === selectedOpt) {
+      btn.classList.add("wrong");
+    }
+  });
+
+  feedback.classList.remove("hidden");
+  if (selectedOpt === correctOpt) {
+    feedback.className = "quiz-feedback success mt-2";
+    feedback.innerHTML = `✅ <strong>Correct!</strong> ${explanation}`;
+  } else {
+    feedback.className = "quiz-feedback error mt-2";
+    feedback.innerHTML = `❌ <strong>Incorrect.</strong> Correct answer is Option ${String.fromCharCode(65 + correctOpt)}. ${explanation}`;
+  }
+};
+
+function showError(msg) {
+  document.getElementById("loadingState").classList.add("hidden");
+  document.getElementById("errorState").classList.remove("hidden");
+  document.getElementById("errorMsg").textContent = msg;
+}
+
+async function downloadPDF() {
+  toast.info("Preparing your PDF...");
+  const activeId = currentTargetId || fileId;
+  const note = await api.get(`/notes/${activeId}`);
+  const fileName = (note.data?.original_name || "notes").replace(/\.[^/.]+$/, "") + "_notes.pdf";
+  const result = await api.download(`/notes/${activeId}/download`, fileName);
+  if (result.success) {
+    toast.success("Download started!");
+  } else {
+    toast.error(result.message || "Download failed. Please try again.");
+  }
+}
+
+// Copy notes
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = document.getElementById("notesContent").innerText;
+  navigator.clipboard.writeText(text).then(() => toast.success("Notes copied to clipboard!")).catch(() => toast.error("Copy failed."));
+});
+
+// Sidebar & hamburger
+document.getElementById("hamburger").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("sidebarOverlay").classList.toggle("open");
+});
+document.getElementById("sidebarOverlay").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarOverlay").classList.remove("open");
+});
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  if (confirm("Log out?")) auth.logout();
+});
+
+// Boot
+loadNote();
+</script>
+</body>
+</html>

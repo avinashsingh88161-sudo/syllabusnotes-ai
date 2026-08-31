@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — SyllabusNotes AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+
+<div class="auth-page">
+
+  <!-- ── Left Panel ──────────────────────────────────────────── -->
+  <div class="auth-panel-left">
+    <a class="auth-brand" href="index.html">
+      <div class="auth-brand-icon">📚</div>
+      <div class="auth-brand-name">
+        SyllabusNotes AI
+        <span>Smart Study Platform</span>
+      </div>
+    </a>
+
+    <div class="auth-panel-content">
+      <h2>Study Smarter,<br>Not Harder 🚀</h2>
+      <p>Join thousands of students turning their syllabi into structured study notes in seconds.</p>
+
+      <ul class="auth-features">
+        <li><span class="feature-check">✓</span> 3 free uploads every month</li>
+        <li><span class="feature-check">✓</span> AI-generated unit-wise notes</li>
+        <li><span class="feature-check">✓</span> Works with PDFs, images & DOC files</li>
+        <li><span class="feature-check">✓</span> Personalised to your skill level</li>
+        <li><span class="feature-check">✓</span> No credit card required</li>
+      </ul>
+    </div>
+
+    <div class="auth-panel-quote">
+      <p>"Finally, a tool that actually understands what students need. My notes are now organised, clear, and exam-ready."</p>
+      <footer>— Sneha P., MBA Student</footer>
+    </div>
+  </div>
+
+  <!-- ── Right Panel (Multi-step Form) ────────────────────────── -->
+  <div class="auth-panel-right">
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <h1>Create your free account</h1>
+        <p>Already have an account? <a href="login.html">Log in →</a></p>
+      </div>
+
+      <!-- Step indicators -->
+      <div class="auth-steps" id="stepIndicators">
+        <div class="auth-step-dot active" id="dot1">1</div>
+        <div class="auth-step-line" id="line1"></div>
+        <div class="auth-step-dot" id="dot2">2</div>
+        <div class="auth-step-line" id="line2"></div>
+        <div class="auth-step-dot" id="dot3">✓</div>
+      </div>
+
+      <!-- Alert zone -->
+      <div id="alertZone"></div>
+
+      <!-- ── STEP 1: Basic Info ─────────────────────────────── -->
+      <div id="step1">
+        <form id="step1Form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name</label>
+            <input type="text" id="name" class="form-control" placeholder="Arjun Kumar" autocomplete="name" required />
+            <div class="form-error hidden" id="nameError"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input type="email" id="email" class="form-control" placeholder="arjun@college.edu" autocomplete="email" required />
+            <div class="form-error hidden" id="emailError"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="password-field">
+              <input type="password" id="password" class="form-control" placeholder="Min. 6 characters" autocomplete="new-password" required />
+              <button type="button" class="password-toggle" id="togglePass">👁️</button>
+            </div>
+            <div class="password-strength mt-1" id="strengthMeter">
+              <div class="strength-bar">
+                <div class="strength-segment" id="s1"></div>
+                <div class="strength-segment" id="s2"></div>
+                <div class="strength-segment" id="s3"></div>
+                <div class="strength-segment" id="s4"></div>
+              </div>
+              <div class="strength-label" id="strengthLabel">Enter a password</div>
+            </div>
+            <div class="form-error hidden" id="passwordError"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter password" autocomplete="new-password" required />
+            <div class="form-error hidden" id="confirmError"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            Continue → Step 2
+          </button>
+        </form>
+      </div>
+
+      <!-- ── STEP 2: Academic Profile ──────────────────────── -->
+      <div id="step2" class="hidden">
+        <form id="step2Form" novalidate>
+          <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:20px;">
+            This helps us personalise your notes. You can skip these fields.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="university">University / College</label>
+            <input type="text" id="university" class="form-control" placeholder="e.g., Delhi University" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="semester">Current Semester</label>
+              <select id="semester" class="form-control">
+                <option value="">Select...</option>
+                <option>1st Semester</option>
+                <option>2nd Semester</option>
+                <option>3rd Semester</option>
+                <option>4th Semester</option>
+                <option>5th Semester</option>
+                <option>6th Semester</option>
+                <option>7th Semester</option>
+                <option>8th Semester</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="subject">Main Subject</label>
+              <input type="text" id="subject" class="form-control" placeholder="e.g., Computer Science" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="level">Your Knowledge Level</label>
+            <select id="level" class="form-control" required>
+              <option value="beginner">🟢 Beginner — Simple language, more examples</option>
+              <option value="intermediate">🟡 Intermediate — Standard academic level</option>
+              <option value="pro">🔴 Pro — Advanced, technical depth</option>
+            </select>
+            <div class="form-hint">This affects how AI generates your notes.</div>
+          </div>
+
+          <div style="display:flex; gap:12px;">
+            <button type="button" class="btn btn-ghost" id="backToStep1">← Back</button>
+            <button type="submit" class="btn btn-primary" style="flex:1;">Create My Account 🚀</button>
+          </div>
+
+          <div style="margin-top:16px; text-align:center;">
+            <a href="#" id="skipStep2" style="font-size:0.85rem; color:var(--text-muted);">Skip — I'll fill this in later</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── STEP 3: Success ───────────────────────────────── -->
+      <div id="step3" class="hidden" style="text-align:center; padding: 20px 0;">
+        <div style="font-size:4rem; margin-bottom:20px;">🎉</div>
+        <h2 style="margin-bottom:10px;">Account Created!</h2>
+        <p style="margin-bottom:28px;">Welcome to SyllabusNotes AI! You're all set to upload your first syllabus.</p>
+        <a href="dashboard.html" class="btn btn-primary btn-lg btn-block">Go to Dashboard →</a>
+      </div>
+
+      <div class="auth-footer-text">
+        By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+auth.redirectIfAuth();
+
+// ── Password strength ────────────────────────────────────────
+const passInput = document.getElementById("password");
+const labels = ["Too Weak", "Weak", "Good", "Strong"];
+
+passInput.addEventListener("input", () => {
+  const val  = passInput.value;
+  let score  = 0;
+  if (val.length >= 6)                         score++;
+  if (val.length >= 10)                        score++;
+  if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val))               score++;
+
+  for (let i = 1; i <= 4; i++) {
+    const seg = document.getElementById("s" + i);
+    seg.className = "strength-segment" + (i <= score ? ` active-${score}` : "");
+  }
+  document.getElementById("strengthLabel").textContent = val ? labels[score - 1] || "Very Weak" : "Enter a password";
+});
+
+// Toggle password
+document.getElementById("togglePass").addEventListener("click", function () {
+  const show = passInput.type === "password";
+  passInput.type = show ? "text" : "password";
+  this.textContent = show ? "🙈" : "👁️";
+});
+
+// ── Step navigation helpers ──────────────────────────────────
+function setStep(n) {
+  [1, 2, 3].forEach((i) => {
+    document.getElementById("step" + i).classList.toggle("hidden", i !== n);
+  });
+  // Update dots
+  ["dot1","dot2","dot3"].forEach((id, i) => {
+    const dot = document.getElementById(id);
+    dot.classList.remove("active","done");
+    if (i + 1 < n) dot.classList.add("done");
+    else if (i + 1 === n) dot.classList.add("active");
+  });
+  if (document.getElementById("line1")) {
+    document.getElementById("line1").classList.toggle("done", n > 1);
+    document.getElementById("line2").classList.toggle("done", n > 2);
+  }
+}
+
+// Alert helper
+function showAlert(msg, type = "danger") {
+  document.getElementById("alertZone").innerHTML = `<div class="alert alert-${type} mb-2">${msg}</div>`;
+}
+
+// Collect step-1 data in memory
+let formData = {};
+
+// ── Step 1 Submit ────────────────────────────────────────────
+document.getElementById("step1Form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  let ok = true;
+  document.getElementById("alertZone").innerHTML = "";
+
+  const name   = document.getElementById("name").value.trim();
+  const email  = document.getElementById("email").value.trim();
+  const pass   = passInput.value;
+  const confirm = document.getElementById("confirmPassword").value;
+
+  // Clear previous errors
+  ["nameError","emailError","passwordError","confirmError"].forEach((id) => {
+    document.getElementById(id).classList.add("hidden");
+  });
+  ["name","email","password","confirmPassword"].forEach((id) => {
+    document.getElementById(id).classList.remove("error");
+  });
+
+  if (!name || name.length < 2) {
+    document.getElementById("nameError").textContent = "Name must be at least 2 characters.";
+    document.getElementById("nameError").classList.remove("hidden");
+    document.getElementById("name").classList.add("error");
+    ok = false;
+  }
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    document.getElementById("emailError").textContent = "Please enter a valid email.";
+    document.getElementById("emailError").classList.remove("hidden");
+    document.getElementById("email").classList.add("error");
+    ok = false;
+  }
+  if (!pass || pass.length < 6) {
+    document.getElementById("passwordError").textContent = "Password must be at least 6 characters.";
+    document.getElementById("passwordError").classList.remove("hidden");
+    document.getElementById("password").classList.add("error");
+    ok = false;
+  }
+  if (pass !== confirm) {
+    document.getElementById("confirmError").textContent = "Passwords do not match.";
+    document.getElementById("confirmError").classList.remove("hidden");
+    document.getElementById("confirmPassword").classList.add("error");
+    ok = false;
+  }
+
+  if (ok) {
+    formData = { name, email, password: pass };
+    setStep(2);
+  }
+});
+
+// ── Back button ──────────────────────────────────────────────
+document.getElementById("backToStep1").addEventListener("click", () => setStep(1));
+
+// ── Step 2 Submit ────────────────────────────────────────────
+async function doRegister(extra = {}) {
+  const payload = {
+    ...formData,
+    university: extra.university || "",
+    semester:   extra.semester   || "",
+    subject:    extra.subject    || "",
+    level:      extra.level      || "beginner",
+  };
+
+  const btn = document.querySelector("#step2Form button[type=submit]");
+  if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Creating account...`; }
+
+  const data = await api.post("/auth/register", payload);
+
+  if (data.success) {
+    auth.setSession(data.token, data.user);
+    setStep(3);
+  } else {
+    showAlert(data.message || "Registration failed.");
+    if (btn) { btn.disabled = false; btn.innerHTML = "Create My Account 🚀"; }
+    setStep(1);
+  }
+}
+
+document.getElementById("step2Form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  doRegister({
+    university: document.getElementById("university").value.trim(),
+    semester:   document.getElementById("semester").value,
+    subject:    document.getElementById("subject").value.trim(),
+    level:      document.getElementById("level").value,
+  });
+});
+
+document.getElementById("skipStep2").addEventListener("click", (e) => {
+  e.preventDefault();
+  doRegister();
+});
+</script>
+</body>
+</html>

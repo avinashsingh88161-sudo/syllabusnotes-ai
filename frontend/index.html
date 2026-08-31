@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Syllabus Notes AI — Turn Any Syllabus Into Smart Study Notes</title>
+  <meta name="description" content="Upload your syllabus PDF or image and get AI-powered, structured study notes in seconds. Free to try." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
+
+<!-- ── Navbar ──────────────────────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">
+      <div class="nav-logo-icon">📚</div>
+      <span>SyllabusNotes<span style="color:var(--primary)">AI</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
+      <a href="register.html" class="btn btn-primary btn-sm">Get Started Free</a>
+    </div>
+
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">☰</button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <ul>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div class="mobile-menu-actions">
+    <a href="login.html" class="btn btn-ghost btn-sm">Log In</a>
+    <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+</div>
+
+<!-- ── Hero ────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge animate-in">
+      🚀 AI-Powered Study Notes Generator
+    </div>
+
+    <h1 class="animate-in delay-1">
+      Turn Any Syllabus Into<br>
+      <span class="gradient-text">Smart Study Notes</span>
+    </h1>
+
+    <p class="animate-in delay-2">
+      Upload your syllabus PDF, image, or DOC — and our AI generates structured,
+      unit-wise study notes with explanations and real-world examples in seconds.
+    </p>
+
+    <div class="hero-cta animate-in delay-3">
+      <a href="register.html" class="btn btn-primary btn-lg">
+        📤 Upload Your Syllabus — It's Free
+      </a>
+      <a href="#how-it-works" class="btn btn-outline btn-lg">
+        See How It Works
+      </a>
+    </div>
+
+    <!-- Demo window -->
+    <div class="hero-img-wrap animate-in delay-4">
+      <div class="hero-img-inner">
+        <div class="hero-demo-bar">
+          <span class="hero-demo-dot"></span>
+          <span class="hero-demo-dot"></span>
+          <span class="hero-demo-dot"></span>
+          <span style="color: rgba(255,255,255,0.3); font-size:0.75rem; margin-left:8px; font-family: monospace;">syllabus_notes_ai — dashboard</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 200px 1fr; gap: 16px; min-height: 280px;">
+          <!-- Mock sidebar -->
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 16px;">
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:20px;">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:8px;"></div>
+              <div style="width:80px;height:8px;background:rgba(255,255,255,0.15);border-radius:4px;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="height:28px;background:rgba(79,70,229,0.3);border-radius:8px;border:1px solid rgba(79,70,229,0.4);"></div>
+              <div style="height:28px;background:rgba(255,255,255,0.04);border-radius:8px;"></div>
+              <div style="height:28px;background:rgba(255,255,255,0.04);border-radius:8px;"></div>
+              <div style="height:28px;background:rgba(255,255,255,0.04);border-radius:8px;"></div>
+            </div>
+          </div>
+          <!-- Mock main -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="width:140px;height:10px;background:rgba(255,255,255,0.2);border-radius:4px;"></div>
+              <div style="width:100px;height:28px;background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:8px;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:20px;flex:1;">
+              <div style="width:60%;height:14px;background:linear-gradient(90deg,#4F46E5,#06B6D4);border-radius:4px;margin-bottom:16px;"></div>
+              <div style="width:90%;height:8px;background:rgba(255,255,255,0.12);border-radius:4px;margin-bottom:8px;"></div>
+              <div style="width:80%;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;margin-bottom:8px;"></div>
+              <div style="width:70%;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;margin-bottom:16px;"></div>
+              <div style="width:45%;height:12px;background:rgba(124,58,237,0.5);border-radius:4px;margin-bottom:10px;"></div>
+              <div style="width:88%;height:8px;background:rgba(255,255,255,0.07);border-radius:4px;margin-bottom:8px;"></div>
+              <div style="width:75%;height:8px;background:rgba(255,255,255,0.07);border-radius:4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="hero-stats animate-in delay-4">
+      <div class="hero-stat">
+        <div class="hero-stat-number">10K+</div>
+        <div class="hero-stat-label">Notes Generated</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">5K+</div>
+        <div class="hero-stat-label">Students</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">98%</div>
+        <div class="hero-stat-label">Satisfaction</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-number">&lt;60s</div>
+        <div class="hero-stat-label">Processing Time</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ─────────────────────────────────────────── -->
+<section id="how-it-works" style="background: #fff;">
+  <div class="container">
+    <div class="section-label">Simple Process</div>
+    <h2 class="section-title">From Syllabus to Notes in 3 Steps</h2>
+    <p class="section-sub">No setup, no learning curve. Just upload and get structured notes instantly.</p>
+
+    <div class="steps-grid">
+      <div class="step-card animate-in">
+        <span class="step-number">1</span>
+        <div class="step-icon">📤</div>
+        <h4 class="step-title">Upload Your Syllabus</h4>
+        <p class="step-desc">Drag & drop or click to upload a PDF, image, or DOC file. We support all common formats.</p>
+      </div>
+      <div class="step-card animate-in delay-1">
+        <span class="step-number">2</span>
+        <div class="step-icon">🤖</div>
+        <h4 class="step-title">AI Processes It</h4>
+        <p class="step-desc">Our OCR engine extracts the text, then GPT-powered AI converts it into structured, unit-wise notes.</p>
+      </div>
+      <div class="step-card animate-in delay-2">
+        <span class="step-number">3</span>
+        <div class="step-icon">📖</div>
+        <h4 class="step-title">Study Smarter</h4>
+        <p class="step-desc">View beautifully formatted notes instantly. Premium users can download a professional PDF.</p>
+      </div>
+      <div class="step-card animate-in delay-3">
+        <span class="step-number">4</span>
+        <div class="step-icon">🎯</div>
+        <h4 class="step-title">Personalised to You</h4>
+        <p class="step-desc">Set your level — Beginner, Intermediate, or Pro — and notes adapt their depth accordingly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ─────────────────────────────────────────────── -->
+<section id="features" class="features-section">
+  <div class="container">
+    <div class="section-label">Why SyllabusNotes AI?</div>
+    <h2 class="section-title">Everything a Student Needs</h2>
+    <p class="section-sub">Built specifically for university students who want to study smarter, not harder.</p>
+
+    <div class="features-grid">
+      <div class="feature-card animate-in">
+        <span class="feature-icon">🔍</span>
+        <h4 class="feature-title">OCR Technology</h4>
+        <p class="feature-desc">Handles scanned PDFs, photos of physical syllabi, and digital documents with equal accuracy.</p>
+      </div>
+      <div class="feature-card animate-in delay-1">
+        <span class="feature-icon">🧠</span>
+        <h4 class="feature-title">GPT-Powered Notes</h4>
+        <p class="feature-desc">Uses OpenAI's GPT to create structured notes with definitions, examples, and key concepts.</p>
+      </div>
+      <div class="feature-card animate-in delay-2">
+        <span class="feature-icon">📊</span>
+        <h4 class="feature-title">Unit-Wise Breakdown</h4>
+        <p class="feature-desc">Notes are automatically organised into units, topics, and subtopics — just like textbooks.</p>
+      </div>
+      <div class="feature-card animate-in delay-3">
+        <span class="feature-icon">🎓</span>
+        <h4 class="feature-title">Level-Aware Content</h4>
+        <p class="feature-desc">Beginner, Intermediate, or Pro mode adjusts language complexity and depth of explanations.</p>
+      </div>
+      <div class="feature-card animate-in">
+        <span class="feature-icon">📄</span>
+        <h4 class="feature-title">Professional PDF Export</h4>
+        <p class="feature-desc">Premium users get beautifully formatted PDFs with headings, bullets, and your name on the cover.</p>
+      </div>
+      <div class="feature-card animate-in delay-1">
+        <span class="feature-icon">🔐</span>
+        <h4 class="feature-title">Secure & Private</h4>
+        <p class="feature-desc">JWT authentication, hashed passwords, and protected routes keep your data safe.</p>
+      </div>
+      <div class="feature-card animate-in delay-2">
+        <span class="feature-icon">📱</span>
+        <h4 class="feature-title">Mobile Friendly</h4>
+        <p class="feature-desc">Fully responsive — study from your phone, tablet, or desktop without any compromise.</p>
+      </div>
+      <div class="feature-card animate-in delay-3">
+        <span class="feature-icon">⚡</span>
+        <h4 class="feature-title">Lightning Fast</h4>
+        <p class="feature-desc">Processing typically takes under 60 seconds. Real-time status updates keep you informed.</p>
+      </div>
+      <div class="feature-card animate-in">
+        <span class="feature-icon">📚</span>
+        <h4 class="feature-title">Notes History</h4>
+        <p class="feature-desc">All your generated notes are saved in your dashboard, accessible anytime, anywhere.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ───────────────────────────────────────────────── -->
+<section id="pricing" style="background:#fff;">
+  <div class="container">
+    <div class="section-label">Simple Pricing</div>
+    <h2 class="section-title">Start Free, Upgrade When Ready</h2>
+    <p class="section-sub">No credit card required to start. Upgrade to Premium for unlimited access.</p>
+
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="pricing-card">
+        <div class="pricing-plan">Free</div>
+        <div class="pricing-price">₹0<sub>/mo</sub></div>
+        <div class="pricing-desc">Perfect for trying out</div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> 3 uploads per month</li>
+          <li><span class="check">✓</span> AI-generated notes (view only)</li>
+          <li><span class="check">✓</span> All file formats supported</li>
+          <li><span class="check">✓</span> Beginner level notes</li>
+          <li><span class="cross">✕</span> <span style="color:var(--text-muted)">PDF download</span></li>
+          <li><span class="cross">✕</span> <span style="color:var(--text-muted)">Unlimited uploads</span></li>
+          <li><span class="cross">✕</span> <span style="color:var(--text-muted)">Pro level notes</span></li>
+        </ul>
+        <a href="register.html" class="btn btn-outline btn-block">Get Started Free</a>
+      </div>
+
+      <!-- Premium -->
+      <div class="pricing-card popular">
+        <div class="pricing-popular-tag">⭐ Most Popular</div>
+        <div class="pricing-plan">Premium</div>
+        <div class="pricing-price"><sup>₹</sup>499<sub>/mo</sub></div>
+        <div class="pricing-desc">For serious students</div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> <strong>Unlimited</strong> uploads</li>
+          <li><span class="check">✓</span> AI notes with PDF download</li>
+          <li><span class="check">✓</span> All file formats supported</li>
+          <li><span class="check">✓</span> All levels (Beginner → Pro)</li>
+          <li><span class="check">✓</span> Professional PDF export</li>
+          <li><span class="check">✓</span> Download history</li>
+          <li><span class="check">✓</span> Priority processing</li>
+        </ul>
+        <a href="register.html" class="btn btn-primary btn-block">Start Premium — ₹499/mo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimonials ──────────────────────────────────────────── -->
+<section style="background: var(--bg);">
+  <div class="container">
+    <div class="section-label">Student Reviews</div>
+    <h2 class="section-title">Loved by Students Across India</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card animate-in">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"I uploaded my entire semester syllabus and had comprehensive notes in under 2 minutes. This is a game-changer for exam prep!"</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AK</div>
+          <div>
+            <div class="testimonial-name">Arjun Kumar</div>
+            <div class="testimonial-role">B.Tech CSE, IIT Delhi</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card animate-in delay-1">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"The beginner mode explains concepts so clearly. Even complex topics become easy to understand. Best study tool I've used."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">PS</div>
+          <div>
+            <div class="testimonial-name">Priya Sharma</div>
+            <div class="testimonial-role">BCA 2nd Year, DU</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card animate-in delay-2">
+        <div class="stars">★★★★★</div>
+        <p class="testimonial-text">"The PDF export is professional-quality. I share notes with my entire study group. Totally worth the ₹499 premium."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MR</div>
+          <div>
+            <div class="testimonial-name">Mohammed Raza</div>
+            <div class="testimonial-role">MBA Finance, Pune</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ───────────────────────────────────────────────────── -->
+<div class="container">
+  <div class="cta-section animate-in">
+    <h2>Ready to Study Smarter?</h2>
+    <p>Join 5,000+ students who are saving hours every week with AI-powered notes.</p>
+    <a href="register.html" class="btn btn-lg" style="background:#fff; color: var(--primary); font-weight:700; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+      📚 Create Free Account
+    </a>
+  </div>
+</div>
+
+<!-- ── Footer ────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="nav-logo" href="index.html" style="text-decoration:none;">
+          <div class="nav-logo-icon">📚</div>
+          <span style="color:#fff; font-weight:800;">SyllabusNotes AI</span>
+        </a>
+        <p>AI-powered study notes from any syllabus. Built for Indian students.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="dashboard.html">Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Account</h5>
+        <ul>
+          <li><a href="register.html">Sign Up</a></li>
+          <li><a href="login.html">Log In</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Refund Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 SyllabusNotes AI. All rights reserved.</span>
+      <span>Made with ❤️ for students</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById("navbar");
+  window.addEventListener("scroll", () => {
+    navbar.classList.toggle("scrolled", window.scrollY > 20);
+  });
+
+  // Hamburger
+  const hamburger = document.getElementById("hamburger");
+  const mobileMenu = document.getElementById("mobileMenu");
+  hamburger.addEventListener("click", () => {
+    mobileMenu.classList.toggle("open");
+    hamburger.textContent = mobileMenu.classList.contains("open") ? "✕" : "☰";
+  });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener("click", (e) => {
+      const target = document.querySelector(a.getAttribute("href"));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        mobileMenu.classList.remove("open");
+        hamburger.textContent = "☰";
+      }
+    });
+  });
+
+  // Intersection observer for animations
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.style.opacity = "1"; }),
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll(".animate-in").forEach((el) => {
+    el.style.opacity = "0";
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>

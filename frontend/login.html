@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In — SyllabusNotes AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+
+<div class="auth-page">
+
+  <!-- ── Left Panel ──────────────────────────────────────────── -->
+  <div class="auth-panel-left">
+    <a class="auth-brand" href="index.html">
+      <div class="auth-brand-icon">📚</div>
+      <div class="auth-brand-name">
+        SyllabusNotes AI
+        <span>Smart Study Platform</span>
+      </div>
+    </a>
+
+    <div class="auth-panel-content">
+      <h2>Welcome Back! 👋</h2>
+      <p>Pick up right where you left off. Your notes and history are waiting for you.</p>
+
+      <ul class="auth-features">
+        <li>
+          <span class="feature-check">✓</span>
+          All your generated notes saved automatically
+        </li>
+        <li>
+          <span class="feature-check">✓</span>
+          Continue processing any pending documents
+        </li>
+        <li>
+          <span class="feature-check">✓</span>
+          Access from any device, any time
+        </li>
+        <li>
+          <span class="feature-check">✓</span>
+          Premium PDF downloads always available
+        </li>
+      </ul>
+    </div>
+
+    <div class="auth-panel-quote">
+      <p>"SyllabusNotes AI saved me 4 hours during my finals week. I uploaded 3 syllabi and had notes for all of them in minutes."</p>
+      <footer>— Rahul S., B.Tech 3rd Year</footer>
+    </div>
+  </div>
+
+  <!-- ── Right Panel (Form) ───────────────────────────────────── -->
+  <div class="auth-panel-right">
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <h1>Log in to your account</h1>
+        <p>Don't have an account? <a href="register.html">Create one free →</a></p>
+      </div>
+
+      <!-- Alert zone -->
+      <div id="alertZone"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" novalidate>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          />
+          <div class="form-error hidden" id="emailError"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            Password
+            <a href="#" style="float:right; font-weight:400; font-size:0.8rem; color:var(--primary);">Forgot password?</a>
+          </label>
+          <div class="password-field">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password">👁️</button>
+          </div>
+          <div class="form-error hidden" id="passwordError"></div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+          <input type="checkbox" id="rememberMe" style="width:16px;height:16px;accent-color:var(--primary);" />
+          <label for="rememberMe" style="font-size:0.875rem; color:var(--text-secondary);">Remember me for 7 days</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">
+          Log In
+        </button>
+
+      </form>
+
+      <div class="auth-divider">or</div>
+
+      <!-- Dev quick login -->
+      <div id="devPanel" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:14px; margin-top:4px;">
+        <p style="font-size:0.8rem; color:#92400E; margin-bottom:10px;">⚠️ <strong>Dev Mode</strong> — Quick login with test account:</p>
+        <button type="button" class="btn btn-sm" style="background:rgba(245,158,11,0.15); color:#92400E; border:1px solid rgba(245,158,11,0.3);" id="devLoginBtn">
+          Use demo@test.com / password123
+        </button>
+      </div>
+
+      <div class="auth-footer-text">
+        New to SyllabusNotes AI? <a href="register.html">Create a free account →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+// Redirect if already logged in
+auth.redirectIfAuth();
+
+const form       = document.getElementById("loginForm");
+const submitBtn  = document.getElementById("submitBtn");
+const alertZone  = document.getElementById("alertZone");
+const togglePass = document.getElementById("togglePassword");
+const passInput  = document.getElementById("password");
+
+// Toggle password visibility
+togglePass.addEventListener("click", () => {
+  const show = passInput.type === "password";
+  passInput.type = show ? "text" : "password";
+  togglePass.textContent = show ? "🙈" : "👁️";
+});
+
+// Show alert
+function showAlert(message, type = "danger") {
+  alertZone.innerHTML = `<div class="alert alert-${type} mb-2">${message}</div>`;
+}
+
+// Validate fields
+function validate() {
+  let ok = true;
+  const email = document.getElementById("email").value.trim();
+  const pass  = passInput.value;
+
+  document.getElementById("emailError").classList.add("hidden");
+  document.getElementById("passwordError").classList.add("hidden");
+  document.getElementById("email").classList.remove("error");
+  passInput.classList.remove("error");
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    document.getElementById("emailError").textContent = "Please enter a valid email.";
+    document.getElementById("emailError").classList.remove("hidden");
+    document.getElementById("email").classList.add("error");
+    ok = false;
+  }
+  if (!pass || pass.length < 6) {
+    document.getElementById("passwordError").textContent = "Password must be at least 6 characters.";
+    document.getElementById("passwordError").classList.remove("hidden");
+    passInput.classList.add("error");
+    ok = false;
+  }
+  return ok;
+}
+
+// Submit handler
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  alertZone.innerHTML = "";
+  if (!validate()) return;
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `<span class="spinner"></span> Logging in...`;
+
+  const data = await api.post("/auth/login", {
+    email:    document.getElementById("email").value.trim(),
+    password: passInput.value,
+  });
+
+  if (data.success) {
+    auth.setSession(data.token, data.user);
+    toast.success("Welcome back, " + data.user.name + "!");
+    setTimeout(() => {
+      const redirect = sessionStorage.getItem("redirect_after_login") || "dashboard.html";
+      sessionStorage.removeItem("redirect_after_login");
+      window.location.href = redirect;
+    }, 600);
+  } else {
+    showAlert(data.message || "Login failed. Please try again.");
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = "Log In";
+  }
+});
+
+// Dev quick login
+document.getElementById("devLoginBtn").addEventListener("click", () => {
+  document.getElementById("email").value = "demo@test.com";
+  passInput.value = "password123";
+  form.dispatchEvent(new Event("submit"));
+});
+</script>
+</body>
+</html>
