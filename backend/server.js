@@ -69,7 +69,17 @@ app.use(globalLimiter);
 // Note: Protected via auth middleware in the notes route
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ─── Health Check ────────────────────────────────────────────────────────────
+// ─── Root & Health Check ───────────────────────────────────────────────────
+app.get("/", (_req, res) => {
+  res.json({
+    success: true,
+    message: "🎓 SyllabusNotes AI Backend API is Live & Running!",
+    status: "Healthy",
+    version: "1.0.0",
+    docs: "/api/health",
+  });
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "Server is running 🚀", timestamp: new Date() });
 });
