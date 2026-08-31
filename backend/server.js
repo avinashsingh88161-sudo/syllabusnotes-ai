@@ -33,7 +33,7 @@ app.use(
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "http://127.0.0.1:5500", // Live Server (VS Code)
+  "http://127.0.0.1:5500",
   "http://localhost:5500",
 ];
 app.use(
@@ -42,8 +42,9 @@ app.use(
       if (
         !origin ||
         allowedOrigins.includes(origin) ||
-        (process.env.NODE_ENV === "development" &&
-          (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")))
+        origin.endsWith(".vercel.app") ||
+        origin.startsWith("http://localhost:") ||
+        origin.startsWith("http://127.0.0.1:")
       ) {
         return callback(null, true);
       }

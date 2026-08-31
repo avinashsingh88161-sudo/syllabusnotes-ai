@@ -6,8 +6,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
 const APP_CONFIG = {
-  API_BASE: "http://localhost:5000/api",
+  API_BASE: isLocal ? "http://localhost:5000/api" : "https://syllabusnotes-ai.onrender.com/api",
   TOKEN_KEY: "sn_token",
   USER_KEY:  "sn_user",
 };
