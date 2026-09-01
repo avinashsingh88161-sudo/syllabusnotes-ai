@@ -124,6 +124,7 @@
                 <button class="mode-toggle-btn" id="cheatSheetModeBtn">⚡ 1-Night Cheat Sheet</button>
               </div>
               <div class="action-buttons-group">
+                <button class="action-pill-btn" id="exam15Btn" style="background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%); border: none; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);">🎯 15 Important Questions (20 Marks)</button>
                 <button class="action-pill-btn" id="podcastBtn">🎙️ Audio Podcast</button>
                 <button class="action-pill-btn" id="quizBtn">🧠 Quiz & Viva Prep</button>
                 <button class="action-pill-btn primary" id="askAiTriggerBtn">🤖 Ask AI Tutor (Hinglish)</button>
@@ -287,6 +288,34 @@
   <div class="ai-input-bar">
     <input type="text" class="ai-input-field" id="aiQueryInput" placeholder="Type your doubt (English / Hindi / Hinglish)..." />
     <button class="ai-send-btn" id="aiSendBtn">🚀 Send</button>
+  </div>
+</div>
+
+<!-- ── 🎯 Top 15 University Exam Questions Modal ──────────────── -->
+<div class="modal-overlay hidden" id="exam15ModalOverlay">
+  <div class="modal exam15-modal" role="dialog">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.5rem;">🎯</span>
+        <div>
+          <h3 style="margin:0;font-size:1.05rem;">Top 15 Most Important Semester Exam Questions</h3>
+          <div style="font-size:0.75rem;color:#cbd5e1;">Exhaustive 20-Mark Master Model Answers • Distributed Unit-Wise</div>
+        </div>
+      </div>
+      <button class="modal-close" id="exam15ModalCloseBtn">✕</button>
+    </div>
+    
+    <!-- Unit Filters Bar -->
+    <div class="exam-filters-bar" id="examFiltersBar">
+      <button class="exam-filter-btn active" data-unit="all">🌟 All Units (15)</button>
+    </div>
+
+    <div class="modal-body" id="exam15ModalBody">
+      <div class="text-center" style="padding:40px 20px;">
+        <div class="skeleton skeleton-title" style="margin:0 auto 16px;"></div>
+        <p style="color:var(--text-muted);">AI Examiner is curating 15 most important 20-mark questions & model answers...</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -683,6 +712,165 @@ function appendAiBubble(text, sender, elementId = null) {
   aiMessagesContainer.appendChild(div);
   aiMessagesContainer.scrollTop = aiMessagesContainer.scrollHeight;
 }
+
+// ── 🎯 Top 15 University Exam Questions & 20-Mark Model Answers ──
+const exam15ModalOverlay = document.getElementById("exam15ModalOverlay");
+const exam15ModalBody = document.getElementById("exam15ModalBody");
+const examFiltersBar = document.getElementById("examFiltersBar");
+let cachedExamQuestionsData = null;
+let activeExamUnitFilter = "all";
+
+document.getElementById("exam15Btn").addEventListener("click", async () => {
+  exam15ModalOverlay.classList.remove("hidden");
+  if (!cachedExamQuestionsData) {
+    await fetchExamQuestionsData();
+  } else {
+    renderExamQuestions();
+  }
+});
+
+document.getElementById("exam15ModalCloseBtn").addEventListener("click", () => {
+  exam15ModalOverlay.classList.add("hidden");
+});
+
+async function fetchExamQuestionsData() {
+  exam15ModalBody.innerHTML = `
+    <div class="text-center" style="padding:40px 20px;">
+      <div class="skeleton skeleton-title" style="margin:0 auto 16px;"></div>
+      <p style="color:var(--text-muted);">AI Examiner is curating 15 most important 20-mark questions & model answers...</p>
+    </div>`;
+
+  try {
+    const activeId = currentTargetId || fileId;
+    const res = await api.get(`/notes/${activeId}/exam-questions`);
+    if (res.success && res.data && res.data.questions) {
+      cachedExamQuestionsData = res.data;
+      buildExamUnitFilters();
+      renderExamQuestions();
+    } else {
+      exam15ModalBody.innerHTML = `<div class="alert alert-warning">Could not generate exam questions. Please try again.</div>`;
+    }
+  } catch (err) {
+    exam15ModalBody.innerHTML = `<div class="alert alert-danger">Error loading 15 exam questions.</div>`;
+  }
+}
+
+function buildExamUnitFilters() {
+  if (!cachedExamQuestionsData || !cachedExamQuestionsData.questions) return;
+  const unitsSet = new Set();
+  cachedExamQuestionsData.questions.forEach((q) => {
+    if (q.unit) unitsSet.add(q.unit);
+  });
+
+  const units = Array.from(unitsSet);
+  let html = `<button class="exam-filter-btn ${activeExamUnitFilter === 'all' ? 'active' : ''}" onclick="setExamUnitFilter('all')">🌟 All Units (${cachedExamQuestionsData.questions.length})</button>`;
+  units.forEach((u) => {
+    const shortName = u.length > 22 ? u.slice(0, 20) + "..." : u;
+    html += `<button class="exam-filter-btn ${activeExamUnitFilter === u ? 'active' : ''}" onclick="setExamUnitFilter('${encodeURIComponent(u)}')">${shortName}</button>`;
+  });
+  examFiltersBar.innerHTML = html;
+}
+
+window.setExamUnitFilter = function(encodedUnit) {
+  activeExamUnitFilter = decodeURIComponent(encodedUnit);
+  buildExamUnitFilters();
+  renderExamQuestions();
+};
+
+function renderExamQuestions() {
+  if (!cachedExamQuestionsData || !cachedExamQuestionsData.questions) return;
+  
+  const allList = cachedExamQuestionsData.questions;
+  const filtered = activeExamUnitFilter === "all" ? allList : allList.filter((q) => q.unit === activeExamUnitFilter);
+
+  if (filtered.length === 0) {
+    exam15ModalBody.innerHTML = `<div class="alert alert-info">No questions found for this unit.</div>`;
+    return;
+  }
+
+  let html = `<div class="exam-questions-list">`;
+  filtered.forEach((q, idx) => {
+    const ans = q.modelAnswer || {};
+    const qIndex = q.id || idx + 1;
+    
+    html += `
+      <div class="exam-q-card ${idx === 0 ? 'open' : ''}" id="examCard_${qIndex}">
+        <div class="exam-q-header" onclick="this.parentElement.classList.toggle('open')">
+          <div class="exam-q-title-wrap">
+            <div class="exam-q-badges">
+              <span class="exam-badge-unit">${q.unit || 'Unit'}</span>
+              <span class="exam-badge-marks">🔥 20 Marks</span>
+              <span class="exam-badge-prob">${q.probability || '🔥 98% High Probability'}</span>
+            </div>
+            <div class="exam-q-text">Q${qIndex}: ${q.question}</div>
+          </div>
+          <div class="exam-accordion-toggle">▼</div>
+        </div>
+
+        <div class="exam-q-body">
+          ${ans.definition ? `
+            <div class="answer-section">
+              <div class="answer-section-title">📖 1. Core Definition & Principle</div>
+              <div class="answer-text">${ans.definition}</div>
+            </div>
+          ` : ''}
+
+          ${ans.detailedExplanation ? `
+            <div class="answer-section">
+              <div class="answer-section-title">🔍 2. Step-by-Step Technical Explanation & Mechanics</div>
+              <div class="answer-text">${md.render(ans.detailedExplanation)}</div>
+            </div>
+          ` : ''}
+
+          ${ans.diagram ? `
+            <div class="answer-section">
+              <div class="answer-section-title">📊 3. Architecture & Operational Flowchart</div>
+              ${md.render('```diagram\n' + ans.diagram + '\n```')}
+            </div>
+          ` : ''}
+
+          ${ans.codeOrFormula ? `
+            <div class="answer-section">
+              <div class="answer-section-title">💻 4. Runnable Program / Mathematical Formulation</div>
+              ${md.render('```code\n' + ans.codeOrFormula + '\n```')}
+            </div>
+          ` : ''}
+
+          ${ans.comparisonTable ? `
+            <div class="answer-section">
+              <div class="answer-section-title">⚖️ 5. Technical Comparison Table & Trade-offs</div>
+              ${md.render(ans.comparisonTable)}
+            </div>
+          ` : ''}
+
+          ${ans.examinerMarkingTips ? `
+            <div class="examiner-tips-box">
+              <div class="examiner-tips-title">🎯 6. Examiner Marking Scheme (How to get full 20/20 Marks)</div>
+              <div>${ans.examinerMarkingTips}</div>
+            </div>
+          ` : ''}
+
+          <div class="answer-footer-actions">
+            <button class="copy-answer-btn" onclick="copyFullModelAnswer(${qIndex}, '${encodeURIComponent(q.question)}')">📋 Copy Full 20-Mark Answer</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  exam15ModalBody.innerHTML = html;
+}
+
+window.copyFullModelAnswer = function(qId, encodedTitle) {
+  const card = document.getElementById(`examCard_${qId}`);
+  if (!card) return;
+  const text = decodeURIComponent(encodedTitle) + "\n\n" + card.querySelector(".exam-q-body").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success("Full 20-mark model answer copied!");
+  }).catch(() => {
+    toast.error("Copy failed.");
+  });
+};
 
 // ── 🧠 Interactive Quiz & Viva Modal ──────────────────────────
 const quizModalOverlay = document.getElementById("quizModalOverlay");

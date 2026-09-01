@@ -281,6 +281,100 @@ Return ONLY a valid JSON object matching this schema:
 }
 
 /**
+ * Generate 15 Most Important Semester Exam Questions with 20-Mark Master Model Answers
+ */
+async function generateTop15ExamQuestions(noteText, syllabusText = "") {
+  const systemPrompt = `You are a chief university semester examiner and curriculum evaluator.
+Analyze the syllabus and study notes to generate exactly 15 Most Important & High-Probability University Exam Questions distributed evenly across all units (e.g., 3 questions per unit for 5 units, or distributed proportionally).
+
+For EVERY single question, you MUST provide an exhaustive, 20-mark university exam standard model answer that guarantees full 20/20 marks for a student.
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "subject": "Subject Name",
+  "questions": [
+    {
+      "id": 1,
+      "unit": "Unit 1: <Unit Name>",
+      "question": "Full University Exam Question Text...",
+      "weightage": "20 Marks",
+      "probability": "🔥 98% High Probability",
+      "modelAnswer": {
+        "definition": "Clear, authoritative 3-4 sentence definition and core intuition.",
+        "detailedExplanation": "Step-by-step comprehensive theoretical explanation, working principle, and internal mechanism.",
+        "diagram": "+-------------------------------------------------------+\\n|               Architecture Flowchart                  |\\n+-------------------------------------------------------+\\n| [ Module A ] ---> [ Processing Engine ] ---> [ Output ] |\\n+-------------------------------------------------------+",
+        "codeOrFormula": "Complete runnable code example or mathematical derivation with comments.",
+        "comparisonTable": "| Parameter | Approach A | Approach B |\\n|---|---|---|\\n| Speed | Fast | Moderate |",
+        "examinerMarkingTips": "Key points the student MUST write to score full 20/20 marks without deductions."
+      }
+    }
+  ]
+}`;
+
+  const userPrompt = `Syllabus / Notes Context:
+"""
+${(noteText || syllabusText || "").slice(0, 16000)}
+"""
+
+Generate the Top 15 High-Yield Semester Exam Questions with comprehensive 20-mark model answers in valid JSON format.`;
+
+  const res = await callAiCompletionWithFailover(systemPrompt, userPrompt);
+  if (res && res.content) {
+    try {
+      let raw = res.content.trim();
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) raw = match[0];
+      raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+
+      try {
+        return JSON.parse(raw);
+      } catch (_firstErr) {
+        // Fix unescaped backslashes commonly emitted in ASCII box drawings
+        const sanitized = raw.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+        return JSON.parse(sanitized);
+      }
+    } catch (e) {
+      console.warn("Could not parse AI 15 exam questions JSON, falling back:", e.message);
+    }
+  }
+
+  // Fallback 15 Questions Generator
+  return getFallback15ExamQuestions(noteText);
+}
+
+function getFallback15ExamQuestions(text = "") {
+  const units = ["Unit 1: Core Foundations", "Unit 2: Architecture & Algorithms", "Unit 3: Processing & Management", "Unit 4: Advanced Systems", "Unit 5: Performance & Security"];
+  const questions = [];
+  let count = 1;
+
+  units.forEach((unitName, uIdx) => {
+    for (let q = 1; q <= 3; q++) {
+      questions.push({
+        id: count,
+        unit: unitName,
+        question: `Explain the fundamental architecture, operational mechanisms, and design trade-offs of key ${unitName} concepts in detail with block diagrams.`,
+        weightage: "20 Marks",
+        probability: q === 1 ? "🔥 98% High Probability" : (q === 2 ? "⚡ 90% Expected" : "📌 85% Probable"),
+        modelAnswer: {
+          definition: `This fundamental concept governs the operational lifecycle, resource management, and execution predictability in modern software and hardware architectures.`,
+          detailedExplanation: `1. Principle of Operation: The system partitions execution into distinct sequential and asynchronous phases.\n2. Key Subsystems: Memory management, state handling, synchronization primitives, and fault containment.\n3. Runtime Workflow: Requests are validated, queued, processed through internal pipelines, and emitted as standardized outputs.`,
+          diagram: `+-------------------------------------------------------------+\n|                   SYSTEM ARCHITECTURE                       |\n+-------------------------------------------------------------+\n| [ Request / Input ] ---> [ Validation Engine ]              |\n|                                  |                          |\n|                                  v                          |\n|                       [ Core Processing Unit ]              |\n|                                  |                          |\n|                                  v                          |\n|                       [ Persistent State Store ]            |\n+-------------------------------------------------------------+`,
+          codeOrFormula: `// Standard Model Implementation Structure\npublic class SystemController {\n    public void executeProcess() {\n        System.out.println("Processing Unit Lifecycle [State: 200 OK]");\n    }\n}`,
+          comparisonTable: `| Parameter | Traditional Model | Modern Architecture |\n|:---|:---|:---|\n| Latency | High | Low / Optimized |\n| Memory Overhead | O(N^2) | O(N) Linear |\n| Fault Tolerance | Monolithic Failover | Distributed Resiliency |`,
+          examinerMarkingTips: `To score full 20/20 marks: (1) Draw the clear block diagram with input/output flow, (2) List 4 core advantages with bullet points, (3) Write the code implementation with proper comments, and (4) Mention memory/time complexity trade-offs.`
+        }
+      });
+      count++;
+    }
+  });
+
+  return {
+    subject: "Semester Exam Master Guide",
+    questions
+  };
+}
+
+/**
  * Mock notes fallback with diagrams
  */
 function getMockNotes(text, level) {
@@ -400,4 +494,4 @@ public class EngineDemo {
 *Generated by Syllabus Notes AI — High Quality Study Guide.*`;
 }
 
-module.exports = { generateNotes, askNoteDoubt, generateQuizAndViva };
+module.exports = { generateNotes, askNoteDoubt, generateQuizAndViva, generateTop15ExamQuestions };

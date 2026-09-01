@@ -74,6 +74,16 @@ const FileSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Top 15 High-Yield Exam Questions with 20-Mark Model Answers
+    exam_questions_15: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    // Cached Quiz & Viva data
+    quiz_data: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
   },
   {
     timestamps: true,

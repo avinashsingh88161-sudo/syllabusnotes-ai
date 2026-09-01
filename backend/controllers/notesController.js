@@ -5,7 +5,7 @@
 const path = require("path");
 const fs = require("fs");
 const File = require("../models/File");
-const { askNoteDoubt, generateQuizAndViva } = require("../services/aiService");
+const { askNoteDoubt, generateQuizAndViva, generateTop15ExamQuestions } = require("../services/aiService");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/notes — All notes for logged-in user (dashboard list)
@@ -116,6 +116,39 @@ exports.getQuiz = async (req, res, next) => {
     res.json({
       success: true,
       data: quizData,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/notes/:id/exam-questions — Top 15 University Exam Questions & 20-Mark Model Answers
+// ─────────────────────────────────────────────────────────────────────────────
+exports.getExamQuestions = async (req, res, next) => {
+  try {
+    const file = await File.findOne({ _id: req.params.id, user_id: req.user._id });
+    if (!file) {
+      return res.status(404).json({ success: false, message: "Notes not found." });
+    }
+
+    if (file.exam_questions_15 && file.exam_questions_15.questions && file.exam_questions_15.questions.length > 0) {
+      return res.json({
+        success: true,
+        data: file.exam_questions_15,
+      });
+    }
+
+    const context = file.generated_notes || file.extracted_text || "";
+    const examData = await generateTop15ExamQuestions(context, file.extracted_text);
+
+    if (examData && examData.questions && examData.questions.length > 0) {
+      await File.findByIdAndUpdate(file._id, { exam_questions_15: examData });
+    }
+
+    res.json({
+      success: true,
+      data: examData,
     });
   } catch (err) {
     next(err);

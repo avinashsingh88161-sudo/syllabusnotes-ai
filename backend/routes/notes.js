@@ -4,11 +4,12 @@
 const express = require("express");
 const router = express.Router();
 const { protect, premiumOnly } = require("../middleware/auth");
-const { getAll, getOne, askAi, getQuiz, downloadPDF, deleteOne } = require("../controllers/notesController");
+const { getAll, getOne, askAi, getQuiz, getExamQuestions, downloadPDF, deleteOne } = require("../controllers/notesController");
 
 router.get("/",                     protect,              getAll);
 router.post("/:id/ask-ai",          protect,              askAi);
 router.get("/:id/quiz",             protect,              getQuiz);
+router.get("/:id/exam-questions",   protect,              getExamQuestions);
 router.get("/:id/download",         protect, premiumOnly, downloadPDF);
 router.get("/:id",                  protect,              getOne);
 router.delete("/:id",               protect,              deleteOne);
