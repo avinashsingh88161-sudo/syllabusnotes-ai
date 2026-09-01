@@ -30,31 +30,37 @@ async function callAiCompletionWithFailover(systemPrompt, userPrompt) {
   if (geminiClient) {
     const modelsToTry = [
       process.env.GEMINI_MODEL || "gemini-2.5-flash",
-      "gemini-1.5-flash",
-      "gemini-2.0-flash-exp",
-      "gemini-1.5-pro",
+      "gemini-3.5-flash-lite",
     ];
 
     for (const modelName of modelsToTry) {
-      try {
-        console.log(`🤖 Requesting AI via Google Gemini (${modelName})...`);
-        const model = geminiClient.getGenerativeModel({
-          model: modelName,
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 8192,
-          },
-          systemInstruction: systemPrompt,
-        });
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          console.log(`🤖 Requesting AI via Google Gemini (${modelName}) [Attempt ${attempt}]...`);
+          const model = geminiClient.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 8192,
+            },
+            systemInstruction: systemPrompt,
+          });
 
-        const result = await model.generateContent(userPrompt);
-        const response = await result.response;
-        const text = response.text();
-        if (text && text.length > 200) {
-          return { content: text, tokensUsed: 0 };
+          const result = await model.generateContent(userPrompt);
+          const response = await result.response;
+          const text = response.text();
+          if (text && text.length > 150) {
+            return { content: text, tokensUsed: 0 };
+          }
+        } catch (err) {
+          if (err.message.includes("429") || err.message.includes("Quota exceeded")) {
+            console.warn(`⚠️ Rate limit 429 on ${modelName}, waiting 2.5s before retry...`);
+            await new Promise((r) => setTimeout(r, 2500));
+            continue;
+          }
+          console.warn(`⚠️ Model ${modelName} encountered error: ${err.message}. Trying backup model...`);
+          break;
         }
-      } catch (err) {
-        console.warn(`⚠️ Model ${modelName} encountered error: ${err.message}. Trying backup model...`);
       }
     }
   }
@@ -82,6 +88,95 @@ async function callAiCompletionWithFailover(systemPrompt, userPrompt) {
   }
 
   return null;
+}
+
+/**
+ * Regex-based instant syllabus unit parser (0ms fallback)
+ */
+function parseUnitsWithRegex(text) {
+  const lines = (text || "").split("\n").map(l => l.trim()).filter(Boolean);
+  let subject = "Syllabus Study Guide";
+
+  if (lines.length > 0 && lines[0].length < 80) {
+    subject = lines[0].replace(/^[#=*\s]+/, "");
+  }
+
+  const unitRegex = /(?:Unit|Module|Chapter)[\s\-_]*(?:[IVXLCDM]+|\d+)[:\s\-_]*(.*?)(?=(?:Unit|Module|Chapter)[\s\-_]*(?:[IVXLCDM]+|\d+)|$)/gsi;
+  const matches = [...(text || "").matchAll(unitRegex)];
+  const units = [];
+
+  if (matches.length > 0) {
+    matches.forEach((m, idx) => {
+      const block = m[0];
+      const blockLines = block.split("\n").map(l => l.trim()).filter(Boolean);
+      const title = blockLines[0] || `Unit ${idx + 1}`;
+      
+      const subTopics = [];
+      blockLines.slice(1).forEach(line => {
+        const parts = line.split(/[,;:•|]/).map(p => p.trim()).filter(p => p.length > 2);
+        subTopics.push(...parts);
+      });
+
+      units.push({
+        unitNumber: idx + 1,
+        title: title,
+        topics: subTopics.length > 0 ? subTopics.slice(0, 10) : [title]
+      });
+    });
+  }
+
+  if (units.length > 0) {
+    return { subject, units };
+  }
+  return null;
+}
+
+/**
+ * Step 1: AI call to parse syllabus into subject title and unit chunks with all sub-headings
+ */
+async function parseSyllabusUnits(extractedText) {
+  // 1. Try AI parsing first
+  const systemPrompt = `You are an expert university curriculum parser. Analyze the syllabus text and return a JSON object containing:
+1. "subject": Exact subject name (e.g. "BCA-403 Web Design Concepts" or "Java Programming").
+2. "units": An array of ALL units/modules found in the syllabus text (e.g. Unit 1, Unit 2, Unit 3, Unit 4, Unit 5).
+Each unit object in the array MUST contain:
+- "unitNumber": Integer (1, 2, 3, 4, 5)
+- "title": Name or title of the unit
+- "topics": Array of ALL sub-topic / sub-heading strings listed under this unit (e.g. ["List", "Table", "Images", "Frames", "Forms", "CSS"])
+
+Return ONLY valid JSON matching this schema:
+{
+  "subject": "Subject Name",
+  "units": [
+    {
+      "unitNumber": 1,
+      "title": "Unit Title",
+      "topics": ["Topic 1", "Topic 2", "Topic 3"]
+    }
+  ]
+}`;
+
+  const userPrompt = `Syllabus Document Text:\n"""\n${extractedText.slice(0, 20000)}\n"""\nExtract all units and sub-heading topics in valid JSON format.`;
+
+  try {
+    const res = await callAiCompletionWithFailover(systemPrompt, userPrompt);
+    if (res && res.content) {
+      let raw = res.content.trim();
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) raw = match[0];
+      raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.units && parsed.units.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("⚠️ AI syllabus parsing warn, using regex fallback:", e.message);
+  }
+
+  // 2. Instant Regex fallback if AI rate limited or unparseable
+  console.log("⚡ Using instant regex unit parser...");
+  return parseUnitsWithRegex(extractedText);
 }
 
 /**
@@ -149,7 +244,7 @@ CRITICAL MANDATORY RULES:
 }
 
 /**
- * Step 1: Fast AI call to parse syllabus into subject title and unit chunks
+ * Step 1: Fast AI call to parse syllabus into subject title and unit chunks with all sub-headings
  */
 async function parseSyllabusUnits(extractedText) {
   const systemPrompt = `You are an expert university curriculum parser. Analyze the syllabus text and return a JSON object containing:
@@ -158,7 +253,7 @@ async function parseSyllabusUnits(extractedText) {
 Each unit object in the array MUST contain:
 - "unitNumber": Integer (1, 2, 3, 4, 5)
 - "title": Name or title of the unit
-- "topics": Array of sub-topic strings listed under this unit
+- "topics": Array of ALL sub-topic / sub-heading strings listed under this unit (e.g. ["List", "Table", "Images", "Frames", "Forms", "CSS"])
 
 Return ONLY valid JSON matching this schema:
 {
@@ -189,56 +284,63 @@ Return ONLY valid JSON matching this schema:
   return null;
 }
 
-/**
- * Step 2: Generate exhaustive 6-section study notes for ONE specific Unit
- */
 async function generateNotesForSingleUnit(subjectName, unit, level = "beginner") {
+  const topicList = (unit.topics && unit.topics.length > 0)
+    ? unit.topics
+    : [unit.title || "Core Concepts"];
+
+  const formattedTopics = topicList.map((t, idx) => `Sub-Heading ${idx + 1}: "${t}"`).join("\n");
+
   const systemPrompt = `You are a world-class university professor writing exhaustive, exam-ready study guide notes for ONE SPECIFIC UNIT of the subject "${subjectName}".
 
 Target Level: ${level.toUpperCase()}
 
-MANDATORY RULES FOR THIS UNIT:
+MANDATORY SUB-HEADING GENERATION RULES:
 1. Start directly with "## Unit ${unit.unitNumber}: ${unit.title}"
-2. For EVERY topic in this unit (${(unit.topics || []).join(", ")}):
-   Strictly provide ALL 6 structured sections with thorough, complete detail:
+2. YOU MUST WRITE A DEDICATED SECTION FOR EVERY SINGLE SUB-HEADING / TOPIC LISTED BELOW:
+${formattedTopics}
+
+3. FOR EVERY SINGLE SUB-HEADING ("### Topic: <Sub-Heading Name>"), YOU MUST STRICTLY GENERATE ALL 6 FULL SECTIONS WITH COMPLETE DETAILED CONTENT, ASCII DIAGRAMS, AND RUNNABLE CODE EXAMPLES:
+
    - #### 1. 📖 Definition & Core Concept
-     Authoritative definition explaining why it is needed and core mental models.
+     Crystal-clear, authoritative definition explaining the core mental model and why it is needed.
 
    - #### 2. 🔍 In-Depth Detailed Explanation & Key Rules
-     Comprehensive step-by-step technical breakdown with syntax rules, internal mechanisms, and key points.
+     Comprehensive step-by-step breakdown with syntax rules, internal mechanisms, and key points.
 
    - #### 3. 📊 Visual Architecture / Flow Diagram
      Provide a clean, well-aligned ASCII / Text Box-Art diagram illustrating the architecture, workflow, or lifecycle.
 
    - #### 4. 💻 Practical Code / Runnable Mini-Program Example
-     Provide a complete, realistic code snippet in the EXACT programming language / technology of this subject (e.g. HTML/CSS/JS for Web Design, C for C programming, Python for Python, SQL for DBMS, Java for Java).
-     - Include expected output and a brief execution explanation.
+     Provide a complete, realistic code snippet in the EXACT technology of this subject (e.g. HTML/CSS/JS for Web Design, C for C programming, Python for Python, SQL for DBMS, Java for Java).
+     - Include exact syntax, sample execution output, and line-by-line explanation.
 
    - #### 5. ⚖️ Comparison Table & Advantages/Disadvantages
-     - Markdown comparison table (| Parameter | Feature A | Feature B |).
+     - Markdown comparison table (| Parameter | Approach A | Approach B |).
      - **Advantages / Benefits**: 3 distinct bullet points.
      - **Disadvantages / Limitations**: 2 distinct bullet points.
 
    - #### 6. 💡 Exam Pro-Tips & Viva Questions
      High-yield semester exam takeaway and 1-2 viva questions with concise answer hints.
 
-3. End the unit with:
+4. At the end of the unit, include:
    - #### 🎯 Unit Predicted University Exam Questions
      - **[🔥 95% High Probability - 10 Marks]**: 10-mark expected question with 3-point answer framework.
      - **[⚡ 5-Mark Short Answer]**: Top 5-mark short answer question.`;
 
   const userPrompt = `Subject: ${subjectName}
 Unit ${unit.unitNumber}: ${unit.title}
-Topics: ${(unit.topics || []).join(", ")}
+Sub-Headings to cover in detail:
+${formattedTopics}
 
-Generate complete, exhaustive, exam-ready study notes for this Unit with visual diagrams, code examples, comparison tables, and predicted exam questions.`;
+Generate comprehensive, exhaustive, exam-ready study notes covering EVERY sub-heading above with dedicated code examples, diagrams, comparison tables, and predicted exam questions.`;
 
   const res = await callAiCompletionWithFailover(systemPrompt, userPrompt);
   return res && res.content ? res.content : null;
 }
 
 /**
- * Main note generator: Multi-Unit Parallel Generator for 100% Complete Syllabus Coverage
+ * Main note generator: Multi-Unit Generator with Throttling for 100% Sub-Heading & Unit Coverage
  */
 async function generateNotes(extractedText, level = "beginner") {
   const { geminiClient, openaiClient } = getClients();
@@ -249,21 +351,26 @@ async function generateNotes(extractedText, level = "beginner") {
   }
 
   // ── 1. Extract Syllabus Units ─────────────────────────────────────────────
-  console.log("🔍 Extracting syllabus units & topics...");
+  console.log("🔍 Extracting syllabus units & sub-headings...");
   const syllabusData = await parseSyllabusUnits(extractedText);
 
   if (syllabusData && syllabusData.units && syllabusData.units.length > 0) {
     const subject = syllabusData.subject || "Subject Study Guide";
     console.log(`✅ Identified ${syllabusData.units.length} units for subject: "${subject}"`);
 
-    // ── 2. Parallel Generation for ALL Units ─────────────────────────────────
-    console.log(`🚀 Generating notes for ALL ${syllabusData.units.length} units in parallel...`);
-    const unitPromises = syllabusData.units.map((unit) =>
-      generateNotesForSingleUnit(subject, unit, level)
-    );
+    // ── 2. Sequential Throttled Unit Generation ─────────────────────────────
+    console.log(`🚀 Generating notes for ALL ${syllabusData.units.length} units in high detail...`);
+    const validUnits = [];
 
-    const unitResults = await Promise.all(unitPromises);
-    const validUnits = unitResults.filter(Boolean);
+    for (const unit of syllabusData.units) {
+      console.log(`▶ Generating Unit ${unit.unitNumber}: ${unit.title} (${unit.topics?.length || 0} sub-headings)...`);
+      const unitMarkdown = await generateNotesForSingleUnit(subject, unit, level);
+      if (unitMarkdown) {
+        validUnits.push(unitMarkdown);
+      }
+      // 400ms throttle to respect Gemini free-tier rate limits
+      await new Promise((r) => setTimeout(r, 400));
+    }
 
     if (validUnits.length > 0) {
       // ── 3. Stitch Master Markdown Notes ────────────────────────────────────
@@ -278,7 +385,7 @@ async function generateNotes(extractedText, level = "beginner") {
 
       masterMarkdown += `\n*Generated by Syllabus Notes AI — High Quality Study Guide.*`;
 
-      console.log(`🎉 Master notes stitched successfully (${masterMarkdown.length} characters covering ALL ${validUnits.length} units)`);
+      console.log(`🎉 Master notes stitched successfully (${masterMarkdown.length} characters covering ALL ${validUnits.length} units & sub-headings)`);
       return { notes: masterMarkdown, tokensUsed: 0 };
     }
   }
