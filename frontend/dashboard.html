@@ -334,6 +334,15 @@ async function loadNotes() {
   document.getElementById("statTotal").textContent = data.pagination?.total || files.length;
   document.getElementById("statReady").textContent = files.filter((f) => f.status === "completed").length;
 
+  // Check if any file is actively processing
+  const activeProcessingFile = files.find((f) => ["uploaded", "ocr_processing", "ai_processing", "pdf_generating"].includes(f.status));
+  if (activeProcessingFile) {
+    showProcessing();
+    startPolling(activeProcessingFile._id || activeProcessingFile.id);
+  } else {
+    processingCard.classList.add("hidden");
+  }
+
   notesTableWrap.classList.remove("hidden");
   notesTableBody.innerHTML = files.map(fileRow).join("");
   // Attach row button listeners
@@ -511,7 +520,9 @@ function updateProcessingUI(status) {
 
 function startPolling(fileId) {
   clearInterval(pollingTimer);
+  let pollAttempts = 0;
   pollingTimer = setInterval(async () => {
+    pollAttempts++;
     const data = await api.get(`/upload/status/${fileId}`);
     if (!data.success) return;
 
@@ -519,15 +530,20 @@ function startPolling(fileId) {
 
     if (data.status === "completed") {
       clearInterval(pollingTimer);
+      toast.success("Notes ready! Opening your notes...");
       setTimeout(() => {
         processingCard.classList.add("hidden");
-        toast.success("Notes ready! Click 'View' to read them.");
-        loadNotes();
-      }, 1500);
+        window.location.href = `notes.html?id=${fileId}`;
+      }, 1000);
     } else if (data.status === "error") {
       clearInterval(pollingTimer);
       toast.error("Processing failed: " + (data.error_message || "Unknown error"));
       setTimeout(() => { processingCard.classList.add("hidden"); loadNotes(); }, 2000);
+    } else if (pollAttempts > 60) {
+      clearInterval(pollingTimer);
+      toast.error("Processing timed out. Please click Refresh.");
+      processingCard.classList.add("hidden");
+      loadNotes();
     }
   }, 2500);
 }
