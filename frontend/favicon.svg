@@ -1,4 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="20" fill="#4F46E5"/>
-  <text x="50" y="68" font-size="55" text-anchor="middle" fill="#FFFFFF">📚</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#4338CA" />
+    </linearGradient>
+    <linearGradient id="pageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E0E7FF" />
+    </linearGradient>
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Outer Base Shadow -->
+  <path d="M128 368C128 350.3 142.3 336 160 336H352C369.7 336 384 350.3 384 368V372C384 389.7 369.7 404 352 404H160C142.3 404 128 389.7 128 372V368Z" fill="#312E81" opacity="0.3"/>
+
+  <!-- Left Page of Book -->
+  <path d="M120 160C120 142.3 134.3 128 152 128H244V364H152C134.3 364 120 349.7 120 332V160Z" fill="url(#pageGrad)"/>
+
+  <!-- Right Page of Book -->
+  <path d="M392 160C392 142.3 377.7 128 360 128H268V364H360C377.7 364 392 349.7 392 332V160Z" fill="url(#pageGrad)"/>
+
+  <!-- Book Spine / Center Divider -->
+  <rect x="248" y="124" width="16" height="248" rx="8" fill="#C7D2FE" />
+
+  <!-- Text / Notes Lines on Left Page -->
+  <rect x="148" y="168" width="72" height="12" rx="6" fill="#4F46E5" opacity="0.8"/>
+  <rect x="148" y="196" width="60" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+  <rect x="148" y="220" width="68" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+  <rect x="148" y="244" width="52" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+  <rect x="148" y="268" width="64" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+
+  <!-- Text / Notes Lines on Right Page -->
+  <rect x="292" y="168" width="72" height="12" rx="6" fill="#4F46E5" opacity="0.8"/>
+  <rect x="292" y="196" width="64" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+  <rect x="292" y="220" width="52" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+  <rect x="292" y="244" width="68" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+  <rect x="292" y="268" width="56" height="10" rx="5" fill="#818CF8" opacity="0.6"/>
+
+  <!-- AI Sparkle Star (Top Right) -->
+  <path d="M380 96L392 128L424 140L392 152L380 184L368 152L336 140L368 128Z" fill="url(#sparkleGrad)"/>
+  <path d="M140 80L146 96L162 102L146 108L140 124L134 108L118 102L134 96Z" fill="url(#sparkleGrad)" opacity="0.8"/>
 </svg>
