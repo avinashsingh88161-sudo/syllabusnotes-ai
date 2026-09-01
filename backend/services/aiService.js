@@ -29,9 +29,10 @@ async function callAiCompletionWithFailover(systemPrompt, userPrompt) {
   // 1. Try Gemini with auto-fallback across fast models
   if (geminiClient) {
     const modelsToTry = [
-      process.env.GEMINI_MODEL || "gemini-3.5-flash",
-      "gemini-3.5-flash-lite",
+      process.env.GEMINI_MODEL || "gemini-3.6-flash",
       "gemini-2.5-flash",
+      "gemini-1.5-flash",
+      "gemini-2.0-flash",
     ];
 
     for (const modelName of modelsToTry) {
