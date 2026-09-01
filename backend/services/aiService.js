@@ -149,7 +149,96 @@ CRITICAL MANDATORY RULES:
 }
 
 /**
- * Main note generator: Fast, reliable single-pass generation
+ * Step 1: Fast AI call to parse syllabus into subject title and unit chunks
+ */
+async function parseSyllabusUnits(extractedText) {
+  const systemPrompt = `You are an expert university curriculum parser. Analyze the syllabus text and return a JSON object containing:
+1. "subject": Exact subject name (e.g. "BCA-403 Web Design Concepts" or "Java Programming").
+2. "units": An array of ALL units/modules found in the syllabus text (e.g. Unit 1, Unit 2, Unit 3, Unit 4, Unit 5).
+Each unit object in the array MUST contain:
+- "unitNumber": Integer (1, 2, 3, 4, 5)
+- "title": Name or title of the unit
+- "topics": Array of sub-topic strings listed under this unit
+
+Return ONLY valid JSON matching this schema:
+{
+  "subject": "Subject Name",
+  "units": [
+    {
+      "unitNumber": 1,
+      "title": "Unit Title",
+      "topics": ["Topic 1", "Topic 2", "Topic 3"]
+    }
+  ]
+}`;
+
+  const userPrompt = `Syllabus Document Text:\n"""\n${extractedText.slice(0, 20000)}\n"""\nExtract all units and topics in valid JSON format.`;
+
+  const res = await callAiCompletionWithFailover(systemPrompt, userPrompt);
+  if (res && res.content) {
+    try {
+      let raw = res.content.trim();
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) raw = match[0];
+      raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+      return JSON.parse(raw);
+    } catch (e) {
+      console.warn("Could not parse syllabus units JSON:", e.message);
+    }
+  }
+  return null;
+}
+
+/**
+ * Step 2: Generate exhaustive 6-section study notes for ONE specific Unit
+ */
+async function generateNotesForSingleUnit(subjectName, unit, level = "beginner") {
+  const systemPrompt = `You are a world-class university professor writing exhaustive, exam-ready study guide notes for ONE SPECIFIC UNIT of the subject "${subjectName}".
+
+Target Level: ${level.toUpperCase()}
+
+MANDATORY RULES FOR THIS UNIT:
+1. Start directly with "## Unit ${unit.unitNumber}: ${unit.title}"
+2. For EVERY topic in this unit (${(unit.topics || []).join(", ")}):
+   Strictly provide ALL 6 structured sections with thorough, complete detail:
+   - #### 1. 📖 Definition & Core Concept
+     Authoritative definition explaining why it is needed and core mental models.
+
+   - #### 2. 🔍 In-Depth Detailed Explanation & Key Rules
+     Comprehensive step-by-step technical breakdown with syntax rules, internal mechanisms, and key points.
+
+   - #### 3. 📊 Visual Architecture / Flow Diagram
+     Provide a clean, well-aligned ASCII / Text Box-Art diagram illustrating the architecture, workflow, or lifecycle.
+
+   - #### 4. 💻 Practical Code / Runnable Mini-Program Example
+     Provide a complete, realistic code snippet in the EXACT programming language / technology of this subject (e.g. HTML/CSS/JS for Web Design, C for C programming, Python for Python, SQL for DBMS, Java for Java).
+     - Include expected output and a brief execution explanation.
+
+   - #### 5. ⚖️ Comparison Table & Advantages/Disadvantages
+     - Markdown comparison table (| Parameter | Feature A | Feature B |).
+     - **Advantages / Benefits**: 3 distinct bullet points.
+     - **Disadvantages / Limitations**: 2 distinct bullet points.
+
+   - #### 6. 💡 Exam Pro-Tips & Viva Questions
+     High-yield semester exam takeaway and 1-2 viva questions with concise answer hints.
+
+3. End the unit with:
+   - #### 🎯 Unit Predicted University Exam Questions
+     - **[🔥 95% High Probability - 10 Marks]**: 10-mark expected question with 3-point answer framework.
+     - **[⚡ 5-Mark Short Answer]**: Top 5-mark short answer question.`;
+
+  const userPrompt = `Subject: ${subjectName}
+Unit ${unit.unitNumber}: ${unit.title}
+Topics: ${(unit.topics || []).join(", ")}
+
+Generate complete, exhaustive, exam-ready study notes for this Unit with visual diagrams, code examples, comparison tables, and predicted exam questions.`;
+
+  const res = await callAiCompletionWithFailover(systemPrompt, userPrompt);
+  return res && res.content ? res.content : null;
+}
+
+/**
+ * Main note generator: Multi-Unit Parallel Generator for 100% Complete Syllabus Coverage
  */
 async function generateNotes(extractedText, level = "beginner") {
   const { geminiClient, openaiClient } = getClients();
@@ -159,20 +248,55 @@ async function generateNotes(extractedText, level = "beginner") {
     return { notes: getMockNotes(extractedText, level), tokensUsed: 0 };
   }
 
+  // ── 1. Extract Syllabus Units ─────────────────────────────────────────────
+  console.log("🔍 Extracting syllabus units & topics...");
+  const syllabusData = await parseSyllabusUnits(extractedText);
+
+  if (syllabusData && syllabusData.units && syllabusData.units.length > 0) {
+    const subject = syllabusData.subject || "Subject Study Guide";
+    console.log(`✅ Identified ${syllabusData.units.length} units for subject: "${subject}"`);
+
+    // ── 2. Parallel Generation for ALL Units ─────────────────────────────────
+    console.log(`🚀 Generating notes for ALL ${syllabusData.units.length} units in parallel...`);
+    const unitPromises = syllabusData.units.map((unit) =>
+      generateNotesForSingleUnit(subject, unit, level)
+    );
+
+    const unitResults = await Promise.all(unitPromises);
+    const validUnits = unitResults.filter(Boolean);
+
+    if (validUnits.length > 0) {
+      // ── 3. Stitch Master Markdown Notes ────────────────────────────────────
+      let masterMarkdown = `# ${subject}\n\n## Course Overview\n\nThis comprehensive study guide provides complete, unit-by-unit smart notes designed for university semester exams, viva evaluations, and technical interviews. Every unit covers foundational definitions, deep conceptual explanations, visual architecture diagrams, production-ready code examples, pros & cons, and high-yield exam tips.\n\n---\n\n`;
+
+      masterMarkdown += validUnits.join("\n\n---\n\n");
+
+      masterMarkdown += `\n\n---\n\n## Summary & Key Takeaways\n\n| Unit | Primary Focus | Key Exam Concept |\n|:-----|:--------------|:-----------------|\n`;
+      syllabusData.units.forEach((u) => {
+        masterMarkdown += `| **Unit ${u.unitNumber}** | ${u.title || "Core Concepts"} | High-Yield Semester Exam Focus |\n`;
+      });
+
+      masterMarkdown += `\n*Generated by Syllabus Notes AI — High Quality Study Guide.*`;
+
+      console.log(`🎉 Master notes stitched successfully (${masterMarkdown.length} characters covering ALL ${validUnits.length} units)`);
+      return { notes: masterMarkdown, tokensUsed: 0 };
+    }
+  }
+
+  // Fallback single pass if unit parsing didn't return JSON
+  console.log("⚠️ Single pass generation fallback");
   const systemPrompt = buildStudyNotesSystemPrompt(level);
-  const userPrompt = `Here is the uploaded syllabus / document text. Generate complete, unit-by-unit comprehensive notes with visual diagrams, runnable code examples, comparison tables, and predicted exam questions for every unit:\n\n${extractedText.slice(0, 25000)}`;
+  const userPrompt = `Here is the uploaded syllabus / document text. Generate complete, unit-by-unit comprehensive notes for EVERY unit:\n\n${extractedText.slice(0, 25000)}`;
 
   try {
     const res = await callAiCompletionWithFailover(systemPrompt, userPrompt);
     if (res && res.content && res.content.length > 200) {
-      console.log(`✅ AI Notes generated successfully (${res.content.length} characters)`);
       return { notes: res.content, tokensUsed: res.tokensUsed || 0 };
     }
   } catch (err) {
-    console.error("❌ AI generation error:", err.message);
+    console.error("❌ Single pass AI generation error:", err.message);
   }
 
-  console.log("⚠️ Fallback to structured study notes");
   return { notes: getMockNotes(extractedText, level), tokensUsed: 0 };
 }
 
